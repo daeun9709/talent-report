@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>신규입사자 인재리포트</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;background:#f4f3f0;min-height:100vh;color:#1a1a1a}
+.page{max-width:1200px;margin:0 auto;padding:2rem 2rem 3rem}
+.setup-banner{background:#fff;border:1.5px dashed #d0d0dd;border-radius:14px;padding:1.5rem;margin-bottom:1.5rem}
+.setup-banner.hidden{display:none}
+.setup-title{font-size:14px;font-weight:600;color:#1a1a1a;margin-bottom:10px}
+.setup-steps{font-size:12px;color:#888;line-height:2;margin-bottom:12px}
+.setup-steps b{color:#1a1a1a}
+.setup-steps code{background:#f4f3f0;padding:1px 6px;border-radius:4px;font-size:11px;color:#555}
+.setup-input-row{display:flex;gap:8px}
+.setup-input{flex:1;font-size:12px;padding:9px 12px;border:1px solid #e0e0dd;border-radius:9px;font-family:inherit;color:#1a1a1a;outline:none;transition:border-color .15s}
+.setup-input:focus{border-color:#4a90e2;box-shadow:0 0 0 3px rgba(74,144,226,.1)}
+.setup-input::placeholder{color:#ccc}
+.loading-overlay{position:fixed;inset:0;background:rgba(244,243,240,.88);z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;backdrop-filter:blur(2px)}
+.loading-overlay.hidden{display:none}
+.loading-spinner{width:32px;height:32px;border:3px solid #e0e0dd;border-top-color:#1a1a1a;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:13px;color:#888}
+.error-box{background:#fff5f5;border:1px solid #fcc;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.25rem;font-size:12px;color:#c0392b;display:none}
+.error-box b{display:block;margin-bottom:3px;font-size:13px}
+.header{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:1.75rem}
+.title-block h1{font-size:22px;font-weight:700;color:#1a1a1a;line-height:1.2}
+.title-block p{font-size:11px;color:#aaa;margin-top:4px}
+.top-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.status-row{display:flex;align-items:center;gap:6px}
+.status-dot{width:7px;height:7px;border-radius:50%;background:#ccc;flex-shrink:0}
+.status-dot.live{background:#27ae60;box-shadow:0 0 0 3px rgba(39,174,96,.2)}
+.status-dot.error{background:#e74c3c}
+.status-dot.loading{background:#f39c12;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.status-text{font-size:11px;color:#aaa}
+.btn{font-size:12px;padding:7px 14px;border-radius:8px;border:1px solid #e0e0dd;background:#fff;color:#555;cursor:pointer;font-weight:500;transition:all .15s;white-space:nowrap}
+.btn:hover{border-color:#bbb;color:#222}
+.btn.primary{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.btn.primary:hover{background:#333}
+.month-tabs{display:flex;gap:6px;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap}
+.mtab{font-size:13px;font-weight:600;padding:7px 18px;border-radius:24px;border:1.5px solid #e0e0dd;background:#fff;color:#aaa;cursor:pointer;transition:all .18s}
+.mtab:hover{border-color:#bbb;color:#555}
+.mtab.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.summary-panel{display:grid;grid-template-columns:repeat(4,1fr) 1.6fr;gap:10px;margin-bottom:1.25rem}
+.stat{background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #eaeae8}
+.stat-n{font-size:26px;font-weight:700;color:#1a1a1a;line-height:1}
+.stat-l{font-size:11px;color:#aaa;margin-top:4px}
+.dept-stat{background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #eaeae8}
+.dept-stat-label{font-size:11px;color:#aaa;font-weight:500;margin-bottom:8px;display:block}
+.dept-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.dept-bar-name{font-size:10px;color:#888;width:64px;flex-shrink:0;text-align:right}
+.dept-bar-track{flex:1;height:6px;background:#f0efe9;border-radius:3px;overflow:hidden}
+.dept-bar-fill{height:100%;border-radius:3px;background:#1a1a1a}
+.dept-bar-count{font-size:10px;color:#bbb;width:12px;flex-shrink:0}
+.insight-section{background:#fff;border:1px solid #eaeae8;border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1.25rem}
+.insight-header{display:flex;align-items:center;justify-content:space-between;border-radius:8px;padding:2px 4px;margin:-2px -4px;transition:background .15s;cursor:pointer;user-select:none}
+.insight-header:hover{background:#f7f6f2}
+.insight-title{font-size:13px;font-weight:600;color:#1a1a1a}
+.insight-sub{font-size:11px;color:#bbb}
+.insight-tabs{display:flex;gap:4px;margin-top:.75rem;margin-bottom:1rem}
+.itab{font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid #e8e8e5;background:#faf9f7;color:#aaa;cursor:pointer;transition:all .15s;font-weight:500}
+.itab:hover{border-color:#bbb;color:#555}
+.itab.on{border-color:transparent;color:#fff}
+.itab.on[data-cat="skills"]{background:#2c6a10}
+.itab.on[data-cat="culture"]{background:#962858}
+.itab.on[data-cat="career"]{background:#154fa0}
+.itab.on[data-cat="award"]{background:#d4820a}
+.keyword-chart{display:flex;flex-direction:column;gap:6px}
+.kw-row{display:flex;align-items:center;gap:10px}
+.kw-label{font-size:11px;color:#555;width:130px;flex-shrink:0;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kw-track{flex:1;height:24px;background:#f4f3f0;border-radius:6px;overflow:hidden}
+.kw-fill{height:100%;border-radius:6px;display:flex;align-items:center;padding-left:10px;font-size:10px;font-weight:600;color:rgba(255,255,255,.9);transition:width .45s cubic-bezier(.4,0,.2,1)}
+.kw-count{font-size:11px;font-weight:600;color:#999;width:24px;flex-shrink:0;text-align:right}
+.kw-names{font-size:9px;color:#bbb;width:90px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.filter-section{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;align-items:center}
+.fl{font-size:11px;color:#aaa;margin-right:2px}
+.fb{font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid #e0e0dd;background:#fff;color:#888;cursor:pointer;transition:all .15s}
+.fb:hover{border-color:#bbb;color:#333}
+.fb.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a;font-weight:500}
+.search-wrap{position:relative;margin-bottom:1.25rem}
+.search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:14px;color:#bbb;pointer-events:none}
+.search-input{width:100%;padding:10px 38px;font-size:13px;border:1.5px solid #e8e8e5;border-radius:12px;background:#fff;color:#1a1a1a;font-family:inherit;outline:none;transition:border-color .15s,box-shadow .15s}
+.search-input:focus{border-color:#4a90e2;box-shadow:0 0 0 3px rgba(74,144,226,.1)}
+.search-input::placeholder{color:#ccc}
+.search-clear{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:16px;color:#bbb;cursor:pointer;display:none;background:none;border:none;padding:2px 4px}
+.search-clear:hover{color:#888}
+.search-result-bar{display:none;align-items:center;gap:8px;margin-bottom:1.25rem;padding:10px 14px;background:#fff;border:1px solid #eaeae8;border-radius:10px;flex-wrap:wrap}
+.search-result-text{font-size:12px;color:#555;font-weight:500}
+.search-result-count{font-size:12px;color:#aaa}
+.search-chips{display:flex;gap:4px;flex-wrap:wrap;margin-left:4px}
+.search-chip{font-size:10px;padding:2px 8px;border-radius:20px;background:#f4f3f0;color:#888;border:1px solid #e8e8e5}
+.search-chip.t-award{background:#fef3e2;color:#8a4e0a;border-color:#f8d48a}
+.search-chip.t-career{background:#e8f1fb;color:#154fa0;border-color:#aecdf5}
+.search-chip.t-skills{background:#eaf4e0;color:#2c6a10;border-color:#b0df98}
+.search-chip.t-culture{background:#fce8f1;color:#962858;border-color:#f5b8d8}
+.search-clear-btn{margin-left:auto;font-size:11px;color:#aaa;cursor:pointer;background:none;border:none;padding:2px 6px;border-radius:6px}
+.search-clear-btn:hover{color:#555;background:#f4f3f0}
+.month-section{margin-bottom:2.5rem}
+.month-section-header{display:flex;align-items:center;gap:12px;margin-bottom:1rem}
+.month-section-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:#1a1a1a;color:#fff}
+.month-section-title{font-size:16px;font-weight:700;color:#1a1a1a}
+.month-section-count{font-size:12px;color:#aaa}
+.month-section-line{flex:1;height:1px;background:#eaeae8}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.card{background:#fff;border:1px solid #eaeae8;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;position:relative;transition:box-shadow .2s,border-color .2s}
+.card:hover{border-color:#d0d0ce;box-shadow:0 4px 16px rgba(0,0,0,.07)}
+.photo-wrap{width:100%;aspect-ratio:3/2;overflow:hidden;position:relative}
+.photo-wrap img{width:100%;height:100%;object-fit:cover;object-position:center top;transition:transform .3s}
+.card:hover .photo-wrap img{transform:scale(1.03)}
+.photo-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f0efe9 0%,#e8e7e1 100%)}
+.initials{font-size:38px;font-weight:600;color:#c8c7c0}
+.role-badge{position:absolute;top:9px;right:9px;font-size:10px;padding:3px 9px;border-radius:20px;font-weight:600}
+.role-badge.ae{background:rgba(20,74,140,.9);color:#fff}
+.role-badge.cd{background:rgba(108,30,58,.9);color:#fff}
+.role-badge.other{background:rgba(40,40,40,.85);color:#fff}
+.card-body{padding:12px 13px 14px;display:flex;flex-direction:column;gap:8px;flex:1}
+.card-name{font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:1px}
+.card-meta{font-size:11px;color:#aaa}
+.proj-box{display:flex;align-items:center;gap:8px;padding:6px 10px;background:#f7f6f2;border-radius:8px}
+.proj-title{font-size:9px;font-weight:600;color:#bbb;flex-shrink:0;letter-spacing:.05em;text-transform:uppercase}
+.proj-name{font-size:12px;font-weight:700;color:#1a1a1a}
+.divider{border:none;border-top:1px solid #f0efe9}
+.tags-grid{display:flex;flex-direction:column;gap:5px}
+.tag-row{display:flex;gap:6px;align-items:flex-start}
+.cat-label{font-size:9px;font-weight:600;color:#bbb;white-space:nowrap;flex-shrink:0;min-width:44px;padding-top:3px;letter-spacing:.04em;text-transform:uppercase}
+.tag-list{display:flex;gap:3px;flex-wrap:wrap}
+.tag{font-size:10px;padding:2px 8px;border-radius:20px;line-height:1.6;border:1px solid}
+.t-award{background:#fef3e2;color:#8a4e0a;border-color:#f8d48a}
+.t-career{background:#e8f1fb;color:#154fa0;border-color:#aecdf5}
+.t-skills{background:#eaf4e0;color:#2c6a10;border-color:#b0df98}
+.t-culture{background:#fce8f1;color:#962858;border-color:#f5b8d8}
+.tag.highlight{outline:2px solid currentColor;outline-offset:1px;font-weight:600}
+.no-data{text-align:center;padding:3rem;color:#ccc;font-size:14px;grid-column:1/-1}
+.toast{position:fixed;bottom:24px;right:24px;background:#1a1a1a;color:#fff;font-size:12px;padding:10px 16px;border-radius:10px;z-index:200;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;font-weight:500}
+.toast.show{opacity:1;transform:translateY(0)}
+@media(max-width:700px){.page{padding:1.25rem 1rem 2rem}.summary-panel{grid-template-columns:repeat(2,1fr)}.dept-stat{display:none}.kw-label{width:80px}.kw-names{display:none}}
+</style>
+</head>
+<body>
+<div class="loading-overlay hidden" id="loading-overlay">
+  <div class="loading-spinner"></div>
+  <span class="loading-text">구글 시트에서 데이터 불러오는 중…</span>
+</div>
+<div style="background:#1a1a1a;padding:10px 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+  <span style="font-size:12px;font-weight:600;color:#fff;letter-spacing:.04em">인재리포트 시스템</span>
+  <div style="display:flex;gap:12px;align-items:center">
+    <span style="font-size:11px;color:#888">📊 인재리포트</span>
+    <a href="ai-tool.html" style="font-size:11px;color:#aaa;text-decoration:none;padding:5px 12px;border:1px solid #333;border-radius:20px;transition:all .15s" onmouseover="this.style.color='#fff';this.style.borderColor='#555'" onmouseout="this.style.color='#aaa';this.style.borderColor='#333'">🤖 AI 분석 도구</a>
+  </div>
+</div>
+<div class="page">
+  <div class="setup-banner" id="setup-banner">
+    <div class="setup-title">📋 구글 시트 연결</div>
+    <div class="setup-steps">
+      <b>1.</b> 다운받은 <code>인재리포트_데이터.csv</code> 파일을 구글 시트로 가져오기<br>
+      <b>2.</b> 구글 시트 상단 메뉴 → <b>파일 → 공유 → 웹에 게시</b><br>
+      <b>3.</b> 게시 형식을 <b>쉼표로 구분된 값(.csv)</b> 선택 → <b>게시</b> 클릭<br>
+      <b>4.</b> 생성된 URL 복사 → 아래에 붙여넣기 → 연결하기 클릭<br>
+      <span style="color:#e67e22;font-size:11px">⚠ URL은 <code style="background:#fef9ec;padding:1px 5px;border-radius:3px">.../pub?gid=0&amp;single=true&amp;output=csv</code> 형식이어야 해요</span>
+    </div>
+    <div class="setup-input-row">
+      <input class="setup-input" id="sheet-url-input" placeholder="https://docs.google.com/spreadsheets/d/…/pub?output=csv">
+      <button class="btn primary" onclick="connectSheet()">연결하기</button>
+    </div>
+  </div>
+  <div class="error-box" id="error-box">
+    <b>데이터를 불러오지 못했어요</b>
+    URL을 확인하거나 시트가 "웹에 게시" 상태인지 확인해주세요.
+    <span style="margin-top:6px;display:block"><button class="btn" style="font-size:11px;padding:4px 10px" onclick="openSetup()">설정 다시 열기</button></span>
+  </div>
+  <div class="header">
+    <div class="title-block">
+      <h1>신규입사자 인재리포트</h1>
+      <p>소프트랜딩 프로그램 기반 · 피플팀 내부용</p>
+    </div>
+    <div class="top-actions">
+      <div class="status-row">
+        <div class="status-dot" id="status-dot"></div>
+        <span class="status-text" id="status-text">연결 대기 중</span>
+      </div>
+      <button class="btn" onclick="refresh()">↻ 새로고침</button>
+      <button class="btn" onclick="openSetup()">⚙ 시트 설정</button>
+    </div>
+  </div>
+  <div class="month-tabs" id="month-tabs"></div>
+  <div class="summary-panel">
+    <div class="stat"><div class="stat-n" id="s-total">—</div><div class="stat-l">전체 인원</div></div>
+    <div class="stat"><div class="stat-n" id="s-ae">—</div><div class="stat-l">AE</div></div>
+    <div class="stat"><div class="stat-n" id="s-cd">—</div><div class="stat-l">콘텐츠디자이너</div></div>
+    <div class="stat"><div class="stat-n" id="s-new">—</div><div class="stat-l">신입</div></div>
+    <div class="dept-stat"><span class="dept-stat-label">본부별 인원</span><div id="dept-bars"></div></div>
+  </div>
+  <div class="insight-section">
+    <div class="insight-header" onclick="toggleInsight()">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="insight-title">키워드 현황</span>
+        <span class="insight-sub" id="insight-sub"></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span id="insight-toggle-label" style="font-size:11px;color:#bbb">펼치기</span>
+        <span id="insight-arrow" style="font-size:12px;color:#bbb;transition:transform .2s">▶</span>
+      </div>
+    </div>
+    <div id="insight-body" style="display:none">
+      <div class="insight-tabs">
+        <button class="itab on" data-cat="skills" onclick="switchKwTab(this)">Skills</button>
+        <button class="itab" data-cat="culture" onclick="switchKwTab(this)">Culture Fit</button>
+        <button class="itab" data-cat="career" onclick="switchKwTab(this)">Career</button>
+        <button class="itab" data-cat="award" onclick="switchKwTab(this)">수상</button>
+      </div>
+      <div class="keyword-chart" id="keyword-chart"></div>
+    </div>
+  </div>
+  <div class="filter-section" id="filter-bar"></div>
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" id="search-input" type="text" placeholder="해시태그 검색  예: 카피라이팅  협업  KOSAC" oninput="onSearch(this.value)">
+    <button class="search-clear" id="search-clear" onclick="clearSearch()">✕</button>
+  </div>
+  <div class="search-result-bar" id="search-result-bar">
+    <span class="search-result-text" id="search-result-text"></span>
+    <span class="search-result-count" id="search-result-count"></span>
+    <div class="search-chips" id="search-chips"></div>
+    <button class="search-clear-btn" onclick="clearSearch()">초기화</button>
+  </div>
+  <div id="main-content"></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+let SHEET_URL=localStorage.getItem('talent_sheet_url')||'';
+let employees=[],months=[];
+let currentMonth='전체',currentFilter='all',currentFilterGroup='dept';
+let currentKwTab='skills',insightOpen=false,searchQuery='';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const CAT_COLOR={skills:'#2c6a10',culture:'#962858',career:'#154fa0',award:'#d4820a'};
+const MONTH_ORDER=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+
+function parseCSV(text){
+  const rows=[];
+  const lines=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
+  for(const line of lines){
+    if(!line.trim())continue;
+    const cols=[];let cur='',inQ=false;
+    for(let i=0;i<line.length;i++){
+      const c=line[i];
+      if(c==='"'){inQ=!inQ;}
+      else if(c===','&&!inQ){cols.push(cur.trim());cur='';}
+      else{cur+=c;}
+    }
+    cols.push(cur.trim());rows.push(cols);
+  }
+  return rows;
+}
+function parseTags(s){return(!s||!s.trim())?[]:s.split(';').map(x=>x.trim()).filter(Boolean);}
+function getDeptKey(d){
+  const keys=['소셜기획','광고사업','세마리토끼','미래전략','소셜제작','브랜드그로스'];
+  for(const k of keys)if(d&&d.includes(k))return k;
+  return(d||'').split(' ')[0]||d||'기타';
+}
+function connectSheet(){
+  const url=$('sheet-url-input').value.trim();
+  if(!url){showToast('URL을 입력해주세요');return;}
+  SHEET_URL=url;localStorage.setItem('talent_sheet_url',url);
+  $('setup-banner').classList.add('hidden');loadData();
+}
+function openSetup(){
+  $('setup-banner').classList.remove('hidden');
+  $('sheet-url-input').value=SHEET_URL;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+// CORS 프록시 목록 (순서대로 시도)
+const PROXIES=[
+  url=>url,  // 직접 시도
+  url=>'https://api.allorigins.win/raw?url='+encodeURIComponent(url),
+  url=>'https://corsproxy.io/?'+encodeURIComponent(url),
+];
+
+async function fetchWithProxy(targetUrl){
+  const base=targetUrl+(targetUrl.includes('?')?'&':'?')+'_t='+Date.now();
+  for(const proxy of PROXIES){
+    try{
+      const res=await fetch(proxy(base),{cache:'no-store'});
+      if(!res.ok)continue;
+      const text=await res.text();
+      if(text.includes(','))return text; // CSV면 성공
+    }catch(e){continue;}
+  }
+  throw new Error('모든 경로에서 실패');
+}
+
+async function loadData(){
+  if(!SHEET_URL){setStatus('waiting');return;}
+  setStatus('loading');$('loading-overlay').classList.remove('hidden');$('error-box').style.display='none';
+  try{
+    const text=await fetchWithProxy(SHEET_URL);
+    const rows=parseCSV(text);
+    if(rows.length<2)throw new Error('데이터 없음');
+    const header=rows[0].map(h=>h.toLowerCase().replace(/\s/g,''));
+    const col=k=>header.indexOf(k);
+    employees=rows.slice(1).filter(r=>r.some(c=>c)).map((r,i)=>({
+      id:r[col('id')]||String(i+1),month:r[col('month')]||'1월',name:r[col('name')]||'',
+      role:r[col('role')]||'AE',year:r[col('year')]||'신입',dept:r[col('dept')]||'',
+      deptKey:getDeptKey(r[col('dept')]),project:r[col('project')]||'',
+      award:parseTags(r[col('award')]),career:parseTags(r[col('career')]),
+      skills:parseTags(r[col('skills')]),culture:parseTags(r[col('culture')]),
+      photo:r[col('photo')]||'',
+    })).filter(e=>e.name);
+    const seen=new Set(employees.map(e=>e.month));
+    months=MONTH_ORDER.filter(m=>seen.has(m));
+    setStatus('live');renderAll();
+    const t=new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+    showToast('✓ '+employees.length+'명 불러옴 · '+t);
+  }catch(e){
+    console.error(e);setStatus('error');
+    $('error-box').style.display='block';
+    $('error-box').innerHTML='<b>데이터를 불러오지 못했어요</b>아래 체크리스트를 확인해주세요.<ul style="margin-top:8px;padding-left:16px;line-height:2"><li>구글 시트 → <b>파일 → 공유 → 웹에 게시</b> 가 되어있나요?</li><li>형식이 <b>.csv</b> 로 선택되어 있나요?</li><li>URL이 <code style="background:#fef0f0;padding:1px 5px;border-radius:4px">/pub?output=csv</code> 로 끝나나요?</li></ul><div style="margin-top:10px"><button class="btn" style="font-size:11px;padding:4px 10px" onclick="openSetup()">URL 다시 입력</button></div>';
+  }
+  finally{$('loading-overlay').classList.add('hidden');}
+}
+function refresh(){if(!SHEET_URL){openSetup();return;}loadData();}
+function setStatus(s){
+  const dot=$('status-dot'),txt=$('status-text');dot.className='status-dot';
+  if(s==='live'){dot.classList.add('live');txt.textContent='라이브 · 구글 시트 연결됨';}
+  if(s==='error'){dot.classList.add('error');txt.textContent='연결 실패';}
+  if(s==='loading'){dot.classList.add('loading');txt.textContent='불러오는 중…';}
+  if(s==='waiting'){txt.textContent='연결 대기 중';}
+}
+function empMatchesSearch(emp,q){
+  if(!q)return true;
+  const all=[...(emp.award||[]),...(emp.career||[]),...(emp.skills||[]),...(emp.culture||[]),emp.name,emp.dept,emp.project];
+  return all.some(t=>t&&t.toLowerCase().includes(q.toLowerCase()));
+}
+function filteredEmps(){
+  return employees.filter(e=>{
+    const monthOk=currentMonth==='전체'||e.month===currentMonth;
+    let roleOk=true;
+    if(currentFilterGroup==='dept')roleOk=currentFilter==='all'||e.deptKey===currentFilter;
+    else if(currentFilterGroup==='role')roleOk=e.role===currentFilter;
+    else if(currentFilterGroup==='year'){const isNew=!e.year||e.year==='신입';roleOk=currentFilter==='신입'?isNew:!isNew;}
+    return monthOk&&roleOk&&empMatchesSearch(e,searchQuery);
+  });
+}
+function tagsHtml(arr,cls){
+  if(!arr||!arr.length)return'<span class="tag '+cls+'" style="opacity:.35">-</span>';
+  return arr.map(t=>{const hit=searchQuery&&t.toLowerCase().includes(searchQuery.toLowerCase());return'<span class="tag '+cls+(hit?' highlight':'')+'">'+esc(t)+'</span>';}).join('');
+}
+function renderAll(){renderMonthTabs();renderStats();renderDeptBars();renderFilters();if(insightOpen)renderKeywordChart(currentKwTab);renderSearchResultBar();renderMainContent();}
+function renderMonthTabs(){
+  const bar=$('month-tabs');bar.innerHTML='';
+  const mk=(label,m)=>{const b=document.createElement('button');b.className='mtab'+(currentMonth===m?' on':'');b.textContent=label;b.onclick=()=>{currentMonth=m;renderAll();};bar.appendChild(b);};
+  mk('전체','전체');months.forEach(m=>mk(m,m));
+}
+function renderStats(){
+  const vis=filteredEmps();
+  $('s-total').textContent=vis.length;$('s-ae').textContent=vis.filter(e=>e.role==='AE').length;
+  $('s-cd').textContent=vis.filter(e=>e.role==='CD').length;$('s-new').textContent=vis.filter(e=>!e.year||e.year==='신입').length;
+}
+function renderDeptBars(){
+  const cnt={};filteredEmps().forEach(e=>{cnt[e.deptKey]=(cnt[e.deptKey]||0)+1;});
+  const sorted=Object.entries(cnt).sort((a,b)=>b[1]-a[1]);const max=sorted[0]?sorted[0][1]:1;
+  $('dept-bars').innerHTML=sorted.map(([k,v])=>'<div class="dept-bar-row"><span class="dept-bar-name">'+esc(k)+'</span><div class="dept-bar-track"><div class="dept-bar-fill" style="width:'+Math.round(v/max*100)+'%"></div></div><span class="dept-bar-count">'+v+'</span></div>').join('');
+}
+function renderFilters(){
+  const bar=$('filter-bar');
+  const depts=[...new Set(employees.map(e=>e.deptKey).filter(Boolean))].sort();
+  bar.innerHTML='';
+  const fl=(t,ml)=>{const s=document.createElement('span');s.className='fl';s.textContent=t;if(ml)s.style.marginLeft=ml;bar.appendChild(s);};
+  const fb=(label,f,grp)=>{const b=document.createElement('button');b.className='fb'+(currentFilter===f&&currentFilterGroup===grp?' on':'');b.textContent=label;b.onclick=()=>{currentFilter=f;currentFilterGroup=grp;renderAll();};bar.appendChild(b);};
+  fl('본부');fb('전체','all','dept');depts.forEach(d=>fb(d,d,'dept'));
+  fl('직무','8px');fb('AE','AE','role');fb('콘텐츠디자이너','CD','role');
+  fl('연차','8px');fb('신입','신입','year');fb('경력','경력','year');
+}
+function renderMainContent(){
+  const main=$('main-content');main.innerHTML='';
+  const makeGrid=emps=>{const g=document.createElement('div');g.className='grid';if(!emps.length){g.innerHTML='<div class="no-data">해당 조건의 인원이 없습니다</div>';}else emps.forEach(e=>g.appendChild(makeCard(e)));return g;};
+  if(currentMonth==='전체'){
+    if(!months.length){main.innerHTML='<div class="no-data" style="padding:4rem;text-align:center;color:#ccc">구글 시트를 연결하면 데이터가 표시됩니다</div>';return;}
+    months.forEach(m=>{
+      const emps=filteredEmps().filter(e=>e.month===m);
+      const sec=document.createElement('div');sec.className='month-section';
+      sec.innerHTML='<div class="month-section-header"><span class="month-section-badge">'+esc(m)+'</span><span class="month-section-title">신규입사자</span><span class="month-section-count">'+emps.length+'명</span><div class="month-section-line"></div></div>';
+      sec.appendChild(makeGrid(emps));main.appendChild(sec);
+    });
+  }else{main.appendChild(makeGrid(filteredEmps()));}
+}
+function makeCard(emp){
+  const card=document.createElement('div');card.className='card';
+  const rLabel=emp.role==='CD'?'콘텐츠디자이너':emp.role;
+  const rClass=emp.role==='AE'?'ae':emp.role==='CD'?'cd':'other';
+  const yLabel=emp.year||'신입';
+  card.innerHTML='<div class="photo-wrap">'+(emp.photo?'<img src="'+esc(emp.photo)+'" alt="'+esc(emp.name)+'">':'<div class="photo-placeholder"><span class="initials">'+esc(emp.name.charAt(0))+'</span></div>')+'<span class="role-badge '+rClass+'">'+esc(rLabel)+' / '+esc(yLabel)+'</span></div><div class="card-body"><div><div class="card-name">'+esc(emp.name)+'</div><div class="card-meta">'+esc(emp.dept)+'</div></div>'+(emp.project?'<div class="proj-box"><span class="proj-title">프로젝트</span><span class="proj-name">'+esc(emp.project)+'</span></div>':'')+'<hr class="divider"><div class="tags-grid"><div class="tag-row"><span class="cat-label">수상</span><div class="tag-list">'+tagsHtml(emp.award,'t-award')+'</div></div><div class="tag-row"><span class="cat-label">Career</span><div class="tag-list">'+tagsHtml(emp.career,'t-career')+'</div></div><div class="tag-row"><span class="cat-label">Skills</span><div class="tag-list">'+tagsHtml(emp.skills,'t-skills')+'</div></div><div class="tag-row"><span class="cat-label">Culture</span><div class="tag-list">'+tagsHtml(emp.culture,'t-culture')+'</div></div></div></div>';
+  return card;
+}
+function toggleInsight(){
+  insightOpen=!insightOpen;
+  $('insight-body').style.display=insightOpen?'block':'none';
+  $('insight-arrow').style.transform=insightOpen?'rotate(90deg)':'rotate(0deg)';
+  $('insight-toggle-label').textContent=insightOpen?'접기':'펼치기';
+  if(insightOpen)renderKeywordChart(currentKwTab);
+}
+function getFreq(cat){
+  const f={},who={};
+  filteredEmps().forEach(emp=>{(emp[cat]||[]).forEach(tag=>{if(!tag||tag==='-')return;f[tag]=(f[tag]||0)+1;if(!who[tag])who[tag]=[];who[tag].push(emp.name);});});
+  return Object.entries(f).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v])=>({kw:k,count:v,who:who[k]}));
+}
+function renderKeywordChart(cat){
+  const data=getFreq(cat),chart=$('keyword-chart');
+  $('insight-sub').textContent=(currentMonth==='전체'?'전체':currentMonth)+' · '+filteredEmps().length+'명 기준';
+  if(!data.length){chart.innerHTML='<div style="color:#ccc;font-size:12px;padding:8px 0">데이터 없음</div>';return;}
+  const max=data[0].count,color=CAT_COLOR[cat];
+  chart.innerHTML=data.map(({kw,count,who})=>{
+    const pct=Math.round(count/max*100);
+    const names=who.slice(0,3).join(', ')+(who.length>3?' 외 '+(who.length-3)+'명':'');
+    return'<div class="kw-row"><span class="kw-label" title="'+esc(kw)+'">'+esc(kw)+'</span><div class="kw-track"><div class="kw-fill" style="width:'+pct+'%;background:'+color+'">'+(count>1?count+'명':'')+'</div></div><span class="kw-count">'+count+'</span><span class="kw-names" title="'+esc(names)+'">'+esc(names)+'</span></div>';
+  }).join('');
+}
+function switchKwTab(el){document.querySelectorAll('.itab').forEach(t=>t.classList.remove('on'));el.classList.add('on');currentKwTab=el.dataset.cat;renderKeywordChart(currentKwTab);}
+function onSearch(val){searchQuery=val.trim();$('search-clear').style.display=searchQuery?'block':'none';renderAll();}
+function clearSearch(){searchQuery='';$('search-input').value='';$('search-clear').style.display='none';renderAll();$('search-input').focus();}
+function renderSearchResultBar(){
+  const bar=$('search-result-bar');
+  if(!searchQuery){bar.style.display='none';return;}
+  bar.style.display='flex';
+  const vis=filteredEmps();
+  $('search-result-text').textContent='"'+searchQuery+'" 검색 결과';
+  $('search-result-count').textContent='· '+vis.length+'명';
+  const matched=new Map();
+  vis.forEach(emp=>{[{arr:emp.award,cls:'t-award'},{arr:emp.career,cls:'t-career'},{arr:emp.skills,cls:'t-skills'},{arr:emp.culture,cls:'t-culture'}].forEach(({arr,cls})=>(arr||[]).forEach(t=>{if(t&&t.toLowerCase().includes(searchQuery.toLowerCase())&&!matched.has(t))matched.set(t,cls);}));});
+  $('search-chips').innerHTML=[...matched.entries()].slice(0,8).map(([t,cls])=>'<span class="search-chip '+cls+'">'+esc(t)+'</span>').join('');
+}
+function showToast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')clearSearch();if((e.metaKey||e.ctrlKey)&&e.key==='r'){e.preventDefault();refresh();}});
+if(SHEET_URL){$('setup-banner').classList.add('hidden');$('sheet-url-input').value=SHEET_URL;loadData();}else{setStatus('waiting');renderAll();}
+</script>
+</body>
+</html>

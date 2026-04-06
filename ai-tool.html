@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>인재 AI 분석 도구</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;background:#f4f3f0;min-height:100vh;color:#1a1a1a}
+.page{max-width:960px;margin:0 auto;padding:2rem 2rem 4rem}
+
+.header{margin-bottom:2rem}
+.header h1{font-size:20px;font-weight:700;color:#1a1a1a;margin-bottom:4px;display:flex;align-items:center;gap:10px}
+.header p{font-size:12px;color:#aaa}
+
+.tabs{display:flex;gap:0;border-bottom:1.5px solid #e8e8e5;margin-bottom:1.75rem}
+.tab{font-size:13px;font-weight:600;padding:10px 22px;color:#bbb;cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;transition:all .15s}
+.tab:hover{color:#888}
+.tab.on{color:#1a1a1a;border-bottom-color:#1a1a1a}
+.tab-content{display:none}
+.tab-content.show{display:block}
+
+.section{background:#fff;border:1px solid #eaeae8;border-radius:14px;padding:1.5rem;margin-bottom:1.25rem}
+.section-title{font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:3px}
+.section-sub{font-size:11px;color:#bbb;margin-bottom:1rem;line-height:1.6}
+
+/* ── 파일 업로드 영역 ── */
+.upload-zone{border:2px dashed #ddd;border-radius:12px;padding:2rem 1.5rem;text-align:center;cursor:pointer;transition:all .2s;background:#faf9f7;position:relative}
+.upload-zone:hover,.upload-zone.drag{border-color:#4a90e2;background:#f0f6ff}
+.upload-zone.drag{border-style:solid}
+.upload-icon{font-size:28px;margin-bottom:10px;display:block}
+.upload-title{font-size:13px;font-weight:600;color:#555;margin-bottom:4px}
+.upload-sub{font-size:11px;color:#bbb;line-height:1.7}
+.upload-types{display:flex;gap:6px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+.type-badge{font-size:10px;padding:2px 8px;border-radius:20px;background:#f0efe9;color:#888;border:1px solid #e8e8e5;font-weight:500}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+
+/* 파일 미리보기 */
+.file-preview{display:none;margin-top:1rem;padding:12px 14px;background:#f7f6f2;border-radius:10px;align-items:center;gap:10px}
+.file-preview.show{display:flex}
+.file-icon{font-size:20px;flex-shrink:0}
+.file-info{flex:1;min-width:0}
+.file-name{font-size:12px;font-weight:600;color:#1a1a1a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-size{font-size:10px;color:#bbb;margin-top:2px}
+.file-remove{font-size:18px;color:#bbb;cursor:pointer;flex-shrink:0;line-height:1;background:none;border:none;padding:2px}
+.file-remove:hover{color:#888}
+
+/* 이미지 미리보기 */
+.img-preview-wrap{display:none;margin-top:1rem}
+.img-preview-wrap.show{display:block}
+.img-preview-wrap img{max-width:100%;max-height:300px;border-radius:8px;border:1px solid #eaeae8;display:block;margin:0 auto}
+
+/* OR 구분 */
+.or-divider{display:flex;align-items:center;gap:12px;margin:1rem 0;color:#ccc;font-size:11px}
+.or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:#eaeae8}
+
+/* 텍스트 입력 */
+.doc-input{width:100%;min-height:140px;padding:12px 14px;font-size:12px;line-height:1.8;border:1.5px solid #e8e8e5;border-radius:10px;font-family:inherit;color:#1a1a1a;background:#faf9f7;resize:vertical;outline:none;transition:border-color .15s}
+.doc-input:focus{border-color:#4a90e2;background:#fff;box-shadow:0 0 0 3px rgba(74,144,226,.08)}
+.doc-input::placeholder{color:#ccc}
+
+/* 인물 정보 */
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1rem}
+.field label{font-size:11px;font-weight:600;color:#aaa;display:block;margin-bottom:5px;letter-spacing:.02em}
+.field input,.field select{width:100%;font-size:12px;padding:8px 11px;border:1px solid #e8e8e5;border-radius:9px;font-family:inherit;color:#1a1a1a;background:#fff;outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus{border-color:#4a90e2;box-shadow:0 0 0 3px rgba(74,144,226,.08)}
+
+/* 버튼 */
+.btn-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{font-size:12px;padding:9px 18px;border-radius:9px;border:1px solid #e0e0dd;background:#fff;color:#555;cursor:pointer;font-weight:500;transition:all .15s;white-space:nowrap}
+.btn:hover{border-color:#bbb;color:#222}
+.btn.primary{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.btn.primary:hover{background:#333}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* 로딩 */
+.loading-row{display:none;align-items:center;gap:10px;padding:12px 0;color:#888;font-size:12px}
+.loading-row.show{display:flex}
+.spinner{width:18px;height:18px;border:2.5px solid #e0e0dd;border-top-color:#1a1a1a;border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-steps{display:flex;flex-direction:column;gap:2px}
+.loading-step{font-size:11px;color:#bbb}
+.loading-step.active{color:#555;font-weight:500}
+
+/* 결과 */
+.result-box{display:none;margin-top:1.25rem}
+.result-box.show{display:block}
+.result-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem;gap:12px;flex-wrap:wrap}
+.result-name{font-size:17px;font-weight:700;color:#1a1a1a;margin-bottom:3px}
+.result-meta{font-size:11px;color:#aaa}
+.tag-hint{font-size:11px;color:#bbb}
+.tag-sections{display:flex;flex-direction:column;gap:8px}
+.tag-section-row{display:flex;gap:8px;align-items:flex-start}
+.tag-section-label{font-size:9px;font-weight:700;color:#bbb;min-width:46px;padding-top:5px;letter-spacing:.06em;text-transform:uppercase;flex-shrink:0}
+.tag-group{display:flex;gap:5px;flex-wrap:wrap}
+.tag{font-size:11px;padding:4px 11px;border-radius:20px;border:1px solid;cursor:pointer;transition:all .15s;user-select:none}
+.tag:hover{opacity:.7}
+.t-award{background:#fef3e2;color:#8a4e0a;border-color:#f8d48a}
+.t-career{background:#e8f1fb;color:#154fa0;border-color:#aecdf5}
+.t-skills{background:#eaf4e0;color:#2c6a10;border-color:#b0df98}
+.t-culture{background:#fce8f1;color:#962858;border-color:#f5b8d8}
+.tag.removed{opacity:.25;text-decoration:line-through}
+.divider-line{border:none;border-top:1px solid #f0efe9;margin:1.25rem 0}
+.csv-label{font-size:12px;font-weight:600;color:#1a1a1a;margin-bottom:8px}
+.csv-box{font-size:11px;font-family:monospace;background:#f7f6f2;padding:10px 14px;border-radius:8px;color:#666;line-height:1.8;word-break:break-all}
+
+/* 에러 */
+.err{font-size:12px;color:#c0392b;padding:10px 14px;background:#fff5f5;border:1px solid #fcc;border-radius:8px;margin-top:10px;display:none;line-height:1.7}
+.err.show{display:block}
+
+/* 주목 인재 */
+.paste-area{width:100%;min-height:120px;padding:12px 14px;font-size:12px;line-height:1.8;border:1.5px solid #e8e8e5;border-radius:10px;font-family:inherit;color:#1a1a1a;background:#faf9f7;resize:vertical;outline:none;transition:border-color .15s}
+.paste-area:focus{border-color:#4a90e2;background:#fff;box-shadow:0 0 0 3px rgba(74,144,226,.08)}
+.paste-area::placeholder{color:#ccc}
+.notable-cards{display:none;flex-direction:column;gap:12px;margin-top:1.25rem}
+.notable-cards.show{display:flex}
+.notable-card{background:#fff;border:1px solid #eaeae8;border-radius:12px;padding:1.25rem}
+.notable-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.notable-rank{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;background:#1a1a1a;color:#fff;letter-spacing:.03em;flex-shrink:0}
+.notable-name{font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:2px}
+.notable-dept{font-size:11px;color:#aaa}
+.notable-tags{display:flex;gap:4px;flex-wrap:wrap;margin:8px 0}
+.notable-reason{font-size:12px;color:#555;line-height:1.75;padding-top:10px;border-top:1px solid #f0efe9}
+
+@media(max-width:600px){
+  .page{padding:1.25rem 1rem 3rem}
+  .info-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div style="background:#1a1a1a;padding:10px 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+  <span style="font-size:12px;font-weight:600;color:#fff;letter-spacing:.04em">인재리포트 시스템</span>
+  <div style="display:flex;gap:12px;align-items:center">
+    <a href="index.html" style="font-size:11px;color:#aaa;text-decoration:none;padding:5px 12px;border:1px solid #333;border-radius:20px;transition:all .15s" onmouseover="this.style.color='#fff';this.style.borderColor='#555'" onmouseout="this.style.color='#aaa';this.style.borderColor='#333'">📊 인재리포트</a>
+    <span style="font-size:11px;color:#888">🤖 AI 분석 도구</span>
+  </div>
+</div>
+<div class="page">
+
+  <div class="header">
+    <h1>인재 AI 분석 도구 <span style="font-size:12px;font-weight:500;color:#bbb;padding:3px 10px;border-radius:20px;background:#f0efe9">Powered by Claude</span></h1>
+    <p>소프트랜딩 문서를 업로드하거나 붙여넣으면 4개 카테고리 태그를 자동으로 추출합니다</p>
+  </div>
+
+  <div class="tabs">
+    <div class="tab on" onclick="switchTab('extract')">📄 태그 자동 추출</div>
+    <div class="tab" onclick="switchTab('notable')">⭐ 주목 인재 선정</div>
+  </div>
+
+  <!-- ═══════════════════════════
+       TAB 1 : 태그 추출
+  ═══════════════════════════ -->
+  <div class="tab-content show" id="tab-extract">
+
+    <!-- 인물 기본 정보 -->
+    <div class="section">
+      <div class="section-title">인물 기본 정보</div>
+      <div class="section-sub">추출 후 구글 시트 복사용 데이터에 자동 반영됩니다</div>
+      <div class="info-grid">
+        <div class="field"><label>이름 *</label><input type="text" id="e-name" placeholder="홍길동"></div>
+        <div class="field"><label>직무</label>
+          <select id="e-role"><option value="AE">AE</option><option value="CD">콘텐츠디자이너</option><option value="other">기타</option></select>
+        </div>
+        <div class="field"><label>연차</label><input type="text" id="e-year" placeholder="신입 / 1.0 / 3.5…"></div>
+        <div class="field"><label>소속 본부/팀</label><input type="text" id="e-dept" placeholder="소셜기획본부 2실 2팀"></div>
+        <div class="field"><label>입사 월</label><input type="text" id="e-month" placeholder="1월"></div>
+        <div class="field"><label>현재 프로젝트</label><input type="text" id="e-project" placeholder="iM뱅크"></div>
+      </div>
+    </div>
+
+    <!-- 문서 업로드 -->
+    <div class="section">
+      <div class="section-title">소프트랜딩 문서 업로드</div>
+      <div class="section-sub">활동지 · 이력서 · 포트폴리오를 올리거나, 아래 텍스트 박스에 직접 붙여넣으세요</div>
+
+      <!-- 드래그앤드롭 존 -->
+      <div class="upload-zone" id="upload-zone"
+        ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+        <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.txt,.md"
+          onchange="onFileSelect(event)">
+        <span class="upload-icon">📂</span>
+        <div class="upload-title">파일을 여기에 드래그하거나 클릭해서 선택</div>
+        <div class="upload-sub">한 번에 1개 파일 업로드</div>
+        <div class="upload-types">
+          <span class="type-badge">PDF</span>
+          <span class="type-badge">이미지 (JPG · PNG)</span>
+          <span class="type-badge">텍스트 (TXT)</span>
+        </div>
+      </div>
+
+      <!-- 파일 선택됨 표시 -->
+      <div class="file-preview" id="file-preview">
+        <span class="file-icon" id="file-icon">📄</span>
+        <div class="file-info">
+          <div class="file-name" id="file-name"></div>
+          <div class="file-size" id="file-size"></div>
+        </div>
+        <button class="file-remove" onclick="removeFile()" title="파일 제거">✕</button>
+      </div>
+
+      <!-- 이미지 미리보기 -->
+      <div class="img-preview-wrap" id="img-preview-wrap">
+        <img id="img-preview" src="" alt="미리보기">
+      </div>
+
+      <!-- OR -->
+      <div class="or-divider">또는 텍스트로 직접 붙여넣기</div>
+
+      <!-- 텍스트 입력 -->
+      <textarea class="doc-input" id="e-doc"
+        placeholder="이력서, 인터뷰 내용, 활동지 내용 등을 자유롭게 붙여넣으세요.
+
+예시)
+박서현, 세마리토끼 기획 3팀
+전 직장: 방구석연구소 SNS 팀, 세토끼커머스 콘텐츠팀
+수상: KOSAC 본선 진출
+주요 강점: 데이터 기반 인사이트 도출, 루틴빌더형, 협업에 강함
+성향: 실행 중심, 협업 친화형"></textarea>
+
+      <div class="btn-row" style="margin-top:1rem">
+        <button class="btn primary" id="extract-btn" onclick="extractTags()">✦ AI 태그 추출</button>
+        <button class="btn" onclick="clearAll()">초기화</button>
+        <span style="font-size:11px;color:#bbb">파일과 텍스트를 함께 올려도 돼요</span>
+      </div>
+      <div class="loading-row" id="extract-loading">
+        <div class="spinner"></div>
+        <div class="loading-steps">
+          <div class="loading-step active" id="ls1">문서를 읽는 중…</div>
+          <div class="loading-step" id="ls2">카테고리 분류 중…</div>
+        </div>
+      </div>
+      <div class="err" id="extract-err"></div>
+    </div>
+
+    <!-- 결과 -->
+    <div class="result-box" id="extract-result">
+      <div class="section">
+        <div class="result-header">
+          <div>
+            <div class="result-name" id="r-name"></div>
+            <div class="result-meta" id="r-meta"></div>
+          </div>
+          <span class="tag-hint">태그를 클릭하면 제거할 수 있어요</span>
+        </div>
+        <div class="tag-sections" id="r-tags"></div>
+        <hr class="divider-line">
+        <div class="csv-label">구글 시트에 붙여넣을 데이터</div>
+        <div class="csv-box" id="r-csv"></div>
+        <div class="btn-row" style="margin-top:10px">
+          <button class="btn primary" onclick="copyCSV()">📋 한 줄 복사</button>
+          <span style="font-size:11px;color:#bbb">구글 시트 새 행에 바로 붙여넣기하세요</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-extract -->
+
+
+  <!-- ═══════════════════════════
+       TAB 2 : 주목 인재
+  ═══════════════════════════ -->
+  <div class="tab-content" id="tab-notable">
+
+    <div class="section">
+      <div class="section-title">기수 전체 데이터</div>
+      <div class="section-sub">구글 시트에서 헤더 포함 전체 행을 선택 → 복사 → 여기에 붙여넣기</div>
+      <textarea class="paste-area" id="n-data"
+        placeholder="id	month	name	role	year	dept	project	award	career	skills	culture
+1	1월	전성훈	AE	신입	소셜기획본부 2실 2팀	iM뱅크	서울영상광고제 은상	iM뱅크	문제구조화;속도중시형	협업친화적;긍정적사고
+..."></textarea>
+    </div>
+
+    <div class="section">
+      <div class="section-title">선정 기준 <span style="font-size:11px;font-weight:400;color:#bbb">(선택)</span></div>
+      <div class="section-sub">없으면 Claude가 종합적으로 판단합니다</div>
+      <textarea class="paste-area" id="n-criteria" style="min-height:70px"
+        placeholder="예: 수상 이력이 많은 사람 / 다양한 경력 보유자 / Culture가 협업형인 사람 / 대표님이 관심 가질 특이 역량 보유자"></textarea>
+      <div class="btn-row" style="margin-top:1rem">
+        <button class="btn primary" id="notable-btn" onclick="findNotable()">⭐ 주목 인재 선정</button>
+        <button class="btn" onclick="clearNotable()">초기화</button>
+      </div>
+      <div class="loading-row" id="notable-loading">
+        <div class="spinner"></div>
+        <span>전체 인원을 분석하는 중이에요…</span>
+      </div>
+      <div class="err" id="notable-err"></div>
+    </div>
+
+    <div class="notable-cards" id="notable-result"></div>
+
+  </div><!-- /tab-notable -->
+
+</div>
+
+<script>
+// ── 상태 ─────────────────────────────────────
+let uploadedFile = null;   // {type:'pdf'|'image'|'text', base64, mediaType, text}
+
+// ── 탭 ───────────────────────────────────────
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('on',['extract','notable'][i]===t));
+  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('show'));
+  document.getElementById('tab-'+t).classList.add('show');
+}
+
+// ── 드래그앤드롭 ──────────────────────────────
+function onDragOver(e){e.preventDefault();document.getElementById('upload-zone').classList.add('drag');}
+function onDragLeave(e){document.getElementById('upload-zone').classList.remove('drag');}
+function onDrop(e){
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag');
+  const file=e.dataTransfer.files[0];
+  if(file)processFile(file);
+}
+function onFileSelect(e){
+  const file=e.target.files[0];
+  if(file)processFile(file);
+}
+
+function processFile(file){
+  const maxMB=10;
+  if(file.size>maxMB*1024*1024){alert(maxMB+'MB 이하 파일만 업로드 가능합니다');return;}
+
+  const isPDF=file.type==='application/pdf'||file.name.endsWith('.pdf');
+  const isImage=file.type.startsWith('image/');
+  const isText=file.type.startsWith('text/')||file.name.endsWith('.txt')||file.name.endsWith('.md');
+
+  if(!isPDF&&!isImage&&!isText){alert('PDF, 이미지(JPG/PNG/GIF/WEBP), 텍스트 파일만 지원합니다');return;}
+
+  showFilePreview(file, isPDF?'📄':isImage?'🖼️':'📝');
+
+  const reader=new FileReader();
+  if(isText){
+    reader.onload=ev=>{
+      uploadedFile={type:'text',text:ev.target.result};
+    };
+    reader.readAsText(file,'UTF-8');
+  } else {
+    reader.onload=ev=>{
+      const base64=ev.target.result.split(',')[1];
+      uploadedFile={
+        type:isPDF?'pdf':'image',
+        base64,
+        mediaType:file.type||'image/jpeg',
+      };
+      if(isImage){
+        const wrap=document.getElementById('img-preview-wrap');
+        document.getElementById('img-preview').src=ev.target.result;
+        wrap.classList.add('show');
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function showFilePreview(file,icon){
+  const preview=document.getElementById('file-preview');
+  document.getElementById('file-icon').textContent=icon;
+  document.getElementById('file-name').textContent=file.name;
+  const kb=Math.round(file.size/1024);
+  document.getElementById('file-size').textContent=kb>1024?(kb/1024).toFixed(1)+' MB':kb+' KB';
+  preview.classList.add('show');
+}
+
+function removeFile(){
+  uploadedFile=null;
+  document.getElementById('file-preview').classList.remove('show');
+  document.getElementById('img-preview-wrap').classList.remove('show');
+  document.getElementById('img-preview').src='';
+  document.getElementById('file-input').value='';
+}
+
+// ── Claude API ────────────────────────────────
+async function callClaude(messages, system){
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:1000,
+      system:system||'당신은 HR 전문가입니다. 반드시 JSON만 반환하세요. 마크다운 없이 순수 JSON만.',
+      messages
+    })
+  });
+  if(!res.ok)throw new Error('API '+res.status);
+  const data=await res.json();
+  return(data.content.find(c=>c.type==='text')?.text||'').replace(/```json|```/g,'').trim();
+}
+
+// ── TAB1: 태그 추출 ──────────────────────────
+async function extractTags(){
+  const textDoc=document.getElementById('e-doc').value.trim();
+  if(!uploadedFile&&!textDoc){
+    alert('파일을 업로드하거나 텍스트를 붙여넣어 주세요');return;
+  }
+
+  setLoading('extract',true);
+  document.getElementById('extract-result').classList.remove('show');
+  document.getElementById('extract-err').classList.remove('show');
+
+  // 로딩 스텝 애니메이션
+  const ls1=document.getElementById('ls1'),ls2=document.getElementById('ls2');
+  ls1.classList.add('active');ls2.classList.remove('active');
+  const stepTimer=setTimeout(()=>{ls1.classList.remove('active');ls2.classList.add('active');},1800);
+
+  const systemPrompt=`당신은 HR 전문가입니다. 아래 신입사원의 소프트랜딩 문서를 분석해서 정확히 아래 JSON 형식만 반환하세요. 절대 다른 텍스트 없이 JSON만:
+{"award":[],"career":[],"skills":[],"culture":[]}
+
+규칙:
+- award: 수상·공모전·자격증. 없으면 빈 배열.
+- career: 전 직장, 담당 클라이언트, 주요 프로젝트.
+- skills: 핵심 업무 역량, 도구, 기술. 2~5개.
+- culture: 성향, 태도, 일하는 방식. 2~4개.
+- 각 태그: 한국어 2~8자 키워드.`;
+
+  try{
+    // 메시지 구성 (파일+텍스트 조합 가능)
+    const contentParts=[];
+
+    if(uploadedFile){
+      if(uploadedFile.type==='pdf'){
+        contentParts.push({
+          type:'document',
+          source:{type:'base64',media_type:'application/pdf',data:uploadedFile.base64}
+        });
+      } else if(uploadedFile.type==='image'){
+        contentParts.push({
+          type:'image',
+          source:{type:'base64',media_type:uploadedFile.mediaType,data:uploadedFile.base64}
+        });
+      } else if(uploadedFile.type==='text'){
+        contentParts.push({type:'text',text:'[첨부 문서]\n'+uploadedFile.text});
+      }
+    }
+
+    if(textDoc){
+      contentParts.push({type:'text',text:(uploadedFile?'[추가 텍스트]\n':'')+textDoc});
+    }
+
+    contentParts.push({type:'text',text:'위 문서를 분석해서 JSON 태그를 추출해주세요.'});
+
+    const json=await callClaude([{role:'user',content:contentParts}],systemPrompt);
+    clearTimeout(stepTimer);
+    const parsed=JSON.parse(json);
+    renderExtractResult(parsed);
+  }catch(e){
+    clearTimeout(stepTimer);
+    showErr('extract','분석 중 오류가 발생했어요.\n'+e.message);
+  }finally{
+    setLoading('extract',false);
+  }
+}
+
+function renderExtractResult(data){
+  const name=document.getElementById('e-name').value.trim()||'이름 미입력';
+  const role=document.getElementById('e-role').value;
+  const year=document.getElementById('e-year').value.trim()||'신입';
+  const dept=document.getElementById('e-dept').value.trim();
+  const month=document.getElementById('e-month').value.trim()||'1월';
+  const project=document.getElementById('e-project').value.trim();
+
+  document.getElementById('r-name').textContent=name;
+  document.getElementById('r-meta').textContent=[role+' / '+year,dept,month].filter(Boolean).join(' · ');
+
+  const cats=[
+    {key:'award',label:'수상',cls:'t-award'},
+    {key:'career',label:'Career',cls:'t-career'},
+    {key:'skills',label:'Skills',cls:'t-skills'},
+    {key:'culture',label:'Culture',cls:'t-culture'},
+  ];
+  const container=document.getElementById('r-tags');
+  container.innerHTML=cats.map(({key,label,cls})=>`
+    <div class="tag-section-row">
+      <span class="tag-section-label">${label}</span>
+      <div class="tag-group" id="tg-${key}">
+        ${!(data[key]||[]).length
+          ?'<span style="font-size:11px;color:#ccc;padding-top:4px">-</span>'
+          :(data[key]||[]).map(t=>`<span class="tag ${cls}" onclick="toggleTag(this)">${esc(t)}</span>`).join('')}
+      </div>
+    </div>`).join('');
+
+  updateCSV();
+  document.getElementById('extract-result').classList.add('show');
+}
+
+function toggleTag(el){el.classList.toggle('removed');updateCSV();}
+
+function updateCSV(){
+  const get=id=>document.getElementById(id).value.trim();
+  const getTags=key=>[...document.querySelectorAll(`#tg-${key} .tag:not(.removed)`)].map(el=>el.textContent).join(';');
+  const row=[Date.now().toString().slice(-4),get('e-month')||'1월',get('e-name'),
+    get('e-role')||'AE',get('e-year')||'신입',get('e-dept'),get('e-project'),
+    getTags('award'),getTags('career'),getTags('skills'),getTags('culture')].join(',');
+  document.getElementById('r-csv').textContent=row;
+}
+
+function copyCSV(){
+  const text=document.getElementById('r-csv').textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=event.target;btn.textContent='✓ 복사됨';
+    setTimeout(()=>btn.textContent='📋 한 줄 복사',1800);
+  });
+}
+
+function clearAll(){
+  removeFile();
+  document.getElementById('e-doc').value='';
+  ['e-name','e-year','e-dept','e-month','e-project'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('extract-result').classList.remove('show');
+  document.getElementById('extract-err').classList.remove('show');
+}
+
+// ── TAB2: 주목 인재 ──────────────────────────
+async function findNotable(){
+  const raw=document.getElementById('n-data').value.trim();
+  const criteria=document.getElementById('n-criteria').value.trim();
+  if(!raw){alert('시트 데이터를 붙여넣어 주세요');return;}
+
+  setLoading('notable',true);
+  document.getElementById('notable-result').innerHTML='';
+  document.getElementById('notable-result').classList.remove('show');
+  document.getElementById('notable-err').classList.remove('show');
+
+  const prompt=`아래는 신규입사자 인재리포트 데이터입니다.
+
+${raw}
+
+${criteria?'선정 기준: '+criteria+'\n':''}
+데이터를 분석해서 대표님이 주목할 만한 인재 3명을 선정해주세요.
+기준이 없으면: 수상이력 풍부 / 희소한 역량 / Skills+Culture 조합이 독특한 인재.
+
+반드시 JSON만:
+{"notable":[{"name":"","dept":"","role":"","reason":"구체적 이유 2~3문장","highlight_tags":["태그1","태그2","태그3"]}]}`;
+
+  try{
+    const json=await callClaude([{role:'user',content:prompt}]);
+    const parsed=JSON.parse(json);
+    renderNotable(parsed.notable||[]);
+  }catch(e){
+    showErr('notable','분석 오류: '+e.message);
+  }finally{
+    setLoading('notable',false);
+  }
+}
+
+const RANKS=['1순위 주목 인재','2순위 주목 인재','3순위 주목 인재'];
+const RANK_BG=['#1a1a1a','#555','#888'];
+
+function renderNotable(list){
+  const c=document.getElementById('notable-result');
+  if(!list.length){c.innerHTML='<div style="padding:2rem;text-align:center;color:#ccc;font-size:13px">주목 인재를 찾지 못했어요</div>';c.classList.add('show');return;}
+  c.innerHTML=list.map((p,i)=>`
+    <div class="notable-card">
+      <div class="notable-top">
+        <div>
+          <div class="notable-name">${esc(p.name)}</div>
+          <div class="notable-dept">${esc(p.role||'')} · ${esc(p.dept||'')}</div>
+        </div>
+        <span class="notable-rank" style="background:${RANK_BG[i]||'#888'}">${RANKS[i]||'주목 인재'}</span>
+      </div>
+      <div class="notable-tags">${(p.highlight_tags||[]).map(t=>`<span class="tag t-skills" style="cursor:default">${esc(t)}</span>`).join('')}</div>
+      <div class="notable-reason">${esc(p.reason||'')}</div>
+    </div>`).join('');
+  c.classList.add('show');
+}
+
+function clearNotable(){
+  document.getElementById('n-data').value='';
+  document.getElementById('n-criteria').value='';
+  document.getElementById('notable-result').innerHTML='';
+  document.getElementById('notable-result').classList.remove('show');
+  document.getElementById('notable-err').classList.remove('show');
+}
+
+// ── 유틸 ─────────────────────────────────────
+function setLoading(tab,on){
+  document.getElementById(tab+'-loading').classList.toggle('show',on);
+  const btn=document.getElementById(tab+'-btn');
+  if(!btn)return;
+  btn.disabled=on;
+  btn.textContent=on?(tab==='extract'?'분석 중…':'선정 중…'):(tab==='extract'?'✦ AI 태그 추출':'⭐ 주목 인재 선정');
+}
+function showErr(tab,msg){const el=document.getElementById(tab+'-err');el.textContent=msg;el.classList.add('show');}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+</script>
+</body>
+</html>
