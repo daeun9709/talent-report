@@ -44,11 +44,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .mtab{font-size:13px;font-weight:600;padding:7px 18px;border-radius:24px;border:1.5px solid #e0e0dd;background:#fff;color:#aaa;cursor:pointer;transition:all .18s}
 .mtab:hover{border-color:#bbb;color:#555}
 .mtab.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
-.summary-panel{display:grid;grid-template-columns:repeat(4,1fr) 1.6fr;gap:10px;margin-bottom:1.25rem}
+.summary-panel{display:grid;grid-template-columns:repeat(3,1fr) 1.8fr;gap:10px;margin-bottom:1.25rem}
+.summary-panel-top{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr) 1.8fr;gap:10px}
+.summary-panel-bottom{grid-column:1/4;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .stat{background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #eaeae8}
 .stat-n{font-size:26px;font-weight:700;color:#1a1a1a;line-height:1}
 .stat-l{font-size:11px;color:#aaa;margin-top:4px}
-.dept-stat{background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #eaeae8}
+.stat.highlight{background:#1a1a1a}
+.stat.highlight .stat-n{color:#fff}
+.stat.highlight .stat-l{color:rgba(255,255,255,.5)}
+.stat-group{background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #eaeae8;display:flex;flex-direction:column;gap:10px}
+.stat-group-label{font-size:10px;font-weight:600;color:#bbb;letter-spacing:.04em;text-transform:uppercase;margin-bottom:2px}
+.stat-group-row{display:flex;gap:16px}
+.stat-mini-n{font-size:18px;font-weight:700;color:#1a1a1a;line-height:1}
+.stat-mini-l{font-size:10px;color:#aaa;margin-top:2px}
+.dept-stat{background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #eaeae8;grid-row:1/3}
 .dept-stat-label{font-size:11px;color:#aaa;font-weight:500;margin-bottom:8px;display:block}
 .dept-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
 .dept-bar-name{font-size:10px;color:#888;width:64px;flex-shrink:0;text-align:right}
@@ -117,11 +127,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .role-badge.cd{background:rgba(108,30,58,.9);color:#fff}
 .role-badge.other{background:rgba(40,40,40,.85);color:#fff}
 .card-body{padding:12px 13px 14px;display:flex;flex-direction:column;gap:8px;flex:1}
-.card-name{font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:1px}
+.card-name-row{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin-bottom:1px}
+.card-name{font-size:15px;font-weight:700;color:#1a1a1a}
+.card-project-inline{font-size:11px;color:#bbb;font-weight:400}
 .card-meta{font-size:11px;color:#aaa}
-.proj-box{display:flex;align-items:center;gap:8px;padding:6px 10px;background:#f7f6f2;border-radius:8px}
-.proj-title{font-size:9px;font-weight:600;color:#bbb;flex-shrink:0;letter-spacing:.05em;text-transform:uppercase}
-.proj-name{font-size:12px;font-weight:700;color:#1a1a1a}
+.core-box{display:flex;align-items:center;gap:8px;padding:6px 10px;background:#f7f6f2;border-radius:8px}
+.core-title{font-size:9px;font-weight:700;color:#bbb;flex-shrink:0;letter-spacing:.06em;text-transform:uppercase}
+.core-name{font-size:12px;font-weight:700;color:#1a1a1a}
 .divider{border:none;border-top:1px solid #f0efe9}
 .tags-grid{display:flex;flex-direction:column;gap:5px}
 .tag-row{display:flex;gap:6px;align-items:flex-start}
@@ -136,7 +148,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .no-data{text-align:center;padding:3rem;color:#ccc;font-size:14px;grid-column:1/-1}
 .toast{position:fixed;bottom:24px;right:24px;background:#1a1a1a;color:#fff;font-size:12px;padding:10px 16px;border-radius:10px;z-index:200;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;font-weight:500}
 .toast.show{opacity:1;transform:translateY(0)}
-@media(max-width:700px){.page{padding:1.25rem 1rem 2rem}.summary-panel{grid-template-columns:repeat(2,1fr)}.dept-stat{display:none}.kw-label{width:80px}.kw-names{display:none}}
+@media(max-width:700px){.page{padding:1.25rem 1rem 2rem}.summary-panel{grid-template-columns:1fr 1fr;}.dept-stat{display:none}.kw-label{width:80px}.kw-names{display:none}}
 </style>
 </head>
 <body>
@@ -187,10 +199,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
   </div>
   <div class="month-tabs" id="month-tabs"></div>
   <div class="summary-panel">
-    <div class="stat"><div class="stat-n" id="s-total">—</div><div class="stat-l">전체 인원</div></div>
-    <div class="stat"><div class="stat-n" id="s-ae">—</div><div class="stat-l">AE</div></div>
-    <div class="stat"><div class="stat-n" id="s-cd">—</div><div class="stat-l">콘텐츠디자이너</div></div>
-    <div class="stat"><div class="stat-n" id="s-new">—</div><div class="stat-l">신입</div></div>
+    <div class="stat highlight"><div class="stat-n" id="s-total">—</div><div class="stat-l">전체 인원</div></div>
+    <div class="stat-group">
+      <div class="stat-group-label">직무별</div>
+      <div class="stat-group-row">
+        <div><div class="stat-mini-n" id="s-ae">—</div><div class="stat-mini-l">AE</div></div>
+        <div><div class="stat-mini-n" id="s-cd">—</div><div class="stat-mini-l">콘텐츠디자이너</div></div>
+        <div><div class="stat-mini-n" id="s-other">—</div><div class="stat-mini-l">기타</div></div>
+      </div>
+    </div>
+    <div class="stat-group">
+      <div class="stat-group-label">연차별</div>
+      <div class="stat-group-row">
+        <div><div class="stat-mini-n" id="s-new">—</div><div class="stat-mini-l">신입</div></div>
+        <div><div class="stat-mini-n" id="s-exp">—</div><div class="stat-mini-l">경력</div></div>
+      </div>
+    </div>
     <div class="dept-stat"><span class="dept-stat-label">본부별 인원</span><div id="dept-bars"></div></div>
   </div>
   <div class="insight-section">
@@ -234,7 +258,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 // ★ 여기에 구글 시트 CSV URL을 붙여넣으세요 ★
 // 파일을 GitHub에 올리면 모든 사람이 바로 데이터를 볼 수 있어요
 // ═══════════════════════════════════════════════════════
-const DEFAULT_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSIA6s1JyLM3HFWJjY2PW9CpZG-hI70N5YfigjbxrHhMYMaF3V6bfhJ07yKjlx68mJK9kn_pJ5vbKA2/pub?output=csv';
+const DEFAULT_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSIA6s1JyLM3HFWJjY2PW9CpZG-hI70N5YfigjbxrHhMYMaF3V6bfhJ07yKjlx68mJK9kn_pJ5vbKA2/pub?gid=1829718064&single=true&output=csv';
 
 let SHEET_URL = DEFAULT_SHEET_URL || localStorage.getItem('talent_sheet_url') || '';
 let employees=[],months=[];
@@ -309,8 +333,9 @@ async function loadData(){
     const col=k=>header.indexOf(k);
     employees=rows.slice(1).filter(r=>r.some(c=>c)).map((r,i)=>({
       id:r[col('id')]||String(i+1),month:r[col('month')]||'1월',name:r[col('name')]||'',
-      role:r[col('role')]||'AE',year:r[col('year')]||'신입',dept:r[col('dept')]||'',
+      role:normalizeRole(r[col('role')]),year:r[col('year')]||'신입',dept:r[col('dept')]||'',
       deptKey:getDeptKey(r[col('dept')]),project:r[col('project')]||'',
+      coreIdentity:r[col('core_identity')]||r[col('coreidentity')]||'',
       award:parseTags(r[col('award')]),career:parseTags(r[col('career')]),
       skills:parseTags(r[col('skills')]),culture:parseTags(r[col('culture')]),
       photo:r[col('photo')]||'',
@@ -362,8 +387,12 @@ function renderMonthTabs(){
 }
 function renderStats(){
   const vis=filteredEmps();
-  $('s-total').textContent=vis.length;$('s-ae').textContent=vis.filter(e=>e.role==='AE').length;
-  $('s-cd').textContent=vis.filter(e=>e.role==='CD').length;$('s-new').textContent=vis.filter(e=>!e.year||e.year==='신입').length;
+  $('s-total').textContent=vis.length;
+  $('s-ae').textContent=vis.filter(e=>e.role==='AE').length;
+  $('s-cd').textContent=vis.filter(e=>e.role==='CD').length;
+  $('s-other').textContent=vis.filter(e=>e.role!=='AE'&&e.role!=='CD').length;
+  $('s-new').textContent=vis.filter(e=>!e.year||e.year==='신입').length;
+  $('s-exp').textContent=vis.filter(e=>e.year&&e.year!=='신입').length;
 }
 function renderDeptBars(){
   const cnt={};filteredEmps().forEach(e=>{cnt[e.deptKey]=(cnt[e.deptKey]||0)+1;});
@@ -393,12 +422,40 @@ function renderMainContent(){
     });
   }else{main.appendChild(makeGrid(filteredEmps()));}
 }
+// role 정규화: 어떻게 입력해도 AE/CD로 통일
+function normalizeRole(r){
+  if(!r)return'AE';
+  const v=r.trim().toLowerCase();
+  if(v==='cd'||v.includes('콘텐츠')||v.includes('content')||v.includes('designer'))return'CD';
+  if(v==='ae'||v.includes('account'))return'AE';
+  return r.trim();
+}
+
 function makeCard(emp){
+function toDirectPhotoUrl(url){
+  if(!url)return '';
+  // drive.google.com/file/d/FILE_ID/view 형식
+  const m1=url.match(/drive\.google\.com\/file\/d\/([^\/\?]+)/);
+  if(m1)return'https://drive.google.com/uc?export=view&id='+m1[1];
+  // drive.google.com/open?id=FILE_ID 형식
+  const m2=url.match(/drive\.google\.com\/open\?id=([^&]+)/);
+  if(m2)return'https://drive.google.com/uc?export=view&id='+m2[1];
+  // 이미 직접 URL이면 그대로
+  return url;
+}
+
+function makePhotoEl(emp){
+  const url=toDirectPhotoUrl(emp.photo);
+  if(!url)return'<div class="photo-placeholder"><span class="initials">'+esc(emp.name.charAt(0))+'</span></div>';
+  return'<img src="'+esc(url)+'" alt="'+esc(emp.name)+'" onerror="this.parentNode.innerHTML=\'<div class=\\"photo-placeholder\\"><span class=\\"initials\\">'+esc(emp.name.charAt(0))+'</span></div>\'">';
+}
   const card=document.createElement('div');card.className='card';
   const rLabel=emp.role==='CD'?'콘텐츠디자이너':emp.role;
   const rClass=emp.role==='AE'?'ae':emp.role==='CD'?'cd':'other';
   const yLabel=emp.year||'신입';
-  card.innerHTML='<div class="photo-wrap">'+(emp.photo?'<img src="'+esc(emp.photo)+'" alt="'+esc(emp.name)+'">':'<div class="photo-placeholder"><span class="initials">'+esc(emp.name.charAt(0))+'</span></div>')+'<span class="role-badge '+rClass+'">'+esc(rLabel)+' / '+esc(yLabel)+'</span></div><div class="card-body"><div><div class="card-name">'+esc(emp.name)+'</div><div class="card-meta">'+esc(emp.dept)+'</div></div>'+(emp.project?'<div class="proj-box"><span class="proj-title">프로젝트</span><span class="proj-name">'+esc(emp.project)+'</span></div>':'')+'<hr class="divider"><div class="tags-grid"><div class="tag-row"><span class="cat-label">수상</span><div class="tag-list">'+tagsHtml(emp.award,'t-award')+'</div></div><div class="tag-row"><span class="cat-label">Career</span><div class="tag-list">'+tagsHtml(emp.career,'t-career')+'</div></div><div class="tag-row"><span class="cat-label">Skills</span><div class="tag-list">'+tagsHtml(emp.skills,'t-skills')+'</div></div><div class="tag-row"><span class="cat-label">Culture</span><div class="tag-list">'+tagsHtml(emp.culture,'t-culture')+'</div></div></div></div>';
+  const nameRow='<div class="card-name-row"><span class="card-name">'+esc(emp.name)+'</span>'+(emp.project?'<span class="card-project-inline">· '+esc(emp.project)+'</span>':'')+'</div>';
+  const coreBox=emp.coreIdentity?'<div class="core-box"><span class="core-title">Core Identity</span><span class="core-name">'+esc(emp.coreIdentity)+'</span></div>':'';
+  card.innerHTML='<div class="photo-wrap">'+makePhotoEl(emp)+'<span class="role-badge '+rClass+'">'+esc(rLabel)+' / '+esc(yLabel)+'</span></div><div class="card-body"><div>'+nameRow+'<div class="card-meta">'+esc(emp.dept)+'</div></div>'+coreBox+'<hr class="divider"><div class="tags-grid"><div class="tag-row"><span class="cat-label">수상</span><div class="tag-list">'+tagsHtml(emp.award,'t-award')+'</div></div><div class="tag-row"><span class="cat-label">Career</span><div class="tag-list">'+tagsHtml(emp.career,'t-career')+'</div></div><div class="tag-row"><span class="cat-label">Skills</span><div class="tag-list">'+tagsHtml(emp.skills,'t-skills')+'</div></div><div class="tag-row"><span class="cat-label">Culture</span><div class="tag-list">'+tagsHtml(emp.culture,'t-culture')+'</div></div></div></div>';
   return card;
 }
 function toggleInsight(){
