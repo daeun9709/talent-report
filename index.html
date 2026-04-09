@@ -61,6 +61,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .stat-mini-l{font-size:10px;color:#aaa}
 .dept-stat{background:#fff;border-radius:12px;padding:16px 18px;border:1px solid #eaeae8;display:flex;flex-direction:column;justify-content:center}
 .dept-stat-label{font-size:10px;font-weight:600;color:#bbb;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px}
+.dept-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.dept-bar-name{font-size:10px;color:#888;width:56px;flex-shrink:0;text-align:right}
+.dept-bar-track{flex:1;height:5px;background:#f0efe9;border-radius:3px;overflow:hidden}
+.dept-bar-fill{height:100%;border-radius:3px;background:#1a1a1a}
+.dept-bar-count{font-size:10px;color:#bbb;width:14px;flex-shrink:0;text-align:right}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 .dept-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
 .dept-bar-name{font-size:10px;color:#888;width:64px;flex-shrink:0;text-align:right}
 .dept-bar-track{flex:1;height:6px;background:#f0efe9;border-radius:3px;overflow:hidden}
@@ -149,7 +155,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .no-data{text-align:center;padding:3rem;color:#ccc;font-size:14px;grid-column:1/-1}
 .toast{position:fixed;bottom:24px;right:24px;background:#1a1a1a;color:#fff;font-size:12px;padding:10px 16px;border-radius:10px;z-index:200;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;font-weight:500}
 .toast.show{opacity:1;transform:translateY(0)}
-@media(max-width:700px){.page{padding:1.25rem 1rem 2rem}.summary-panel{grid-template-columns:1fr 1fr;}.dept-stat{display:none}.kw-label{width:80px}.kw-names{display:none}}
+@media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:700px){.page{padding:1.25rem 1rem 2rem}.summary-panel{grid-template-columns:1fr 1fr}.dept-stat{display:none}.kw-label{width:80px}.kw-names{display:none}.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
