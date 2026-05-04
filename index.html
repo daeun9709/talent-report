@@ -55,10 +55,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .stat.highlight .stat-l{color:rgba(255,255,255,.45)}
 .stat-group{background:#fff;border-radius:12px;padding:16px 18px;border:1px solid #eaeae8;display:flex;flex-direction:column;justify-content:center;gap:8px}
 .stat-group-label{font-size:10px;font-weight:600;color:#bbb;letter-spacing:.05em;text-transform:uppercase}
-.stat-group-row{display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap}
-.stat-mini{display:flex;flex-direction:column;gap:4px;min-width:0}
+.stat-group-row{display:flex;gap:14px 20px;align-items:flex-start;flex-wrap:wrap}
+.stat-mini{display:flex;flex-direction:column;gap:3px;min-width:44px}
 .stat-mini-n{font-size:20px;font-weight:700;color:#1a1a1a;line-height:1}
-.stat-mini-l{font-size:10px;color:#aaa;white-space:nowrap}
+.stat-mini-l{font-size:10px;color:#aaa;white-space:nowrap;line-height:1.4}
+.stat-mini-wide{min-width:64px}
+.stat-group-row-wide{display:flex;gap:32px;align-items:flex-start}
 .dept-stat{background:#fff;border-radius:12px;padding:16px 18px;border:1px solid #eaeae8;display:flex;flex-direction:column;justify-content:center}
 .dept-toggle-btn{font-size:10px;color:#bbb;background:none;border:none;cursor:pointer;padding:2px 4px;transition:color .15s}
 .dept-toggle-btn:hover{color:#888}
@@ -213,7 +215,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
     </div>
     <div class="stat-group">
       <div class="stat-group-label">연차별</div>
-      <div class="stat-group-row">
+      <div class="stat-group-row-wide">
         <div class="stat-mini"><div class="stat-mini-n" id="s-new">—</div><div class="stat-mini-l">신입</div></div>
         <div class="stat-mini"><div class="stat-mini-n" id="s-exp">—</div><div class="stat-mini-l">경력</div></div>
       </div>
@@ -408,7 +410,7 @@ function renderStats(){
   $('s-total').textContent=vis.length;
   $('s-new').textContent=vis.filter(e=>!e.year||e.year==='신입').length;
   $('s-exp').textContent=vis.filter(e=>e.year&&e.year!=='신입').length;
-  // 직무별 동적 생성
+  // 직무별 동적 생성 — 숫자 상단 정렬, 라벨 아래 고정
   const roleCnt={};
   vis.forEach(e=>{const r=e.role||'기타';roleCnt[r]=(roleCnt[r]||0)+1;});
   const sorted=Object.entries(roleCnt).sort((a,b)=>b[1]-a[1]);
