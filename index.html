@@ -211,7 +211,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
     <div class="stat highlight"><div class="stat-n" id="s-total">—</div><div class="stat-l">전체 인원</div></div>
     <div class="stat-group">
       <div class="stat-group-label">직무별</div>
-      <div class="stat-group-row" id="s-roles-row"></div>
+      <div id="s-roles-panel"></div>
     </div>
     <div class="stat-group">
       <div class="stat-group-label">연차별</div>
@@ -378,48 +378,99 @@ function empMatchesSearch(emp,q){
     emp.name,emp.dept,emp.project,emp.coreIdentity||''];
   return all.some(t=>t&&t.toLowerCase().includes(q.toLowerCase()));
 }
+
+// ── 멀티 필터 상태 ──
+let activeDepts=new Set();   // 비어있으면 전체
+let activeRoles=new Set();
+let activeYears=new Set();
+
 function filteredEmps(){
   return employees.filter(e=>{
     const monthOk=currentMonth==='전체'||e.month===currentMonth;
-    let roleOk=true;
-    if(currentFilterGroup==='dept')roleOk=currentFilter==='all'||e.deptKey===currentFilter;
-    else if(currentFilterGroup==='role')roleOk=e.role===currentFilter;
-    else if(currentFilterGroup==='year'){const isNew=!e.year||e.year==='신입';roleOk=currentFilter==='신입'?isNew:!isNew;}
-    return monthOk&&roleOk&&empMatchesSearch(e,searchQuery);
+    const deptOk=activeDepts.size===0||activeDepts.has(e.deptKey);
+    const roleOk=activeRoles.size===0||activeRoles.has(e.role);
+    const isNew=!e.year||e.year==='신입';
+    const yearOk=activeYears.size===0||(activeYears.has('신입')&&isNew)||(activeYears.has('경력')&&!isNew);
+    return monthOk&&deptOk&&roleOk&&yearOk&&empMatchesSearch(e,searchQuery);
   });
 }
+
 function tagsHtml(arr,cls){
   if(!arr||!arr.length)return'<span class="tag '+cls+'" style="opacity:.35">-</span>';
   return arr.map(t=>{const hit=searchQuery&&t.toLowerCase().includes(searchQuery.toLowerCase());return'<span class="tag '+cls+(hit?' highlight':'')+'">'+esc(t)+'</span>';}).join('');
 }
+
 function renderAll(){renderMonthTabs();renderStats();renderDeptBars();renderFilters();if(insightOpen)renderKeywordChart(currentKwTab);renderSearchResultBar();renderMainContent();}
+
 function renderMonthTabs(){
   const bar=$('month-tabs');bar.innerHTML='';
-  const mk=(label,m)=>{const b=document.createElement('button');b.className='mtab'+(currentMonth===m?' on':'');b.textContent=label;b.onclick=()=>{currentMonth=m;renderAll();};bar.appendChild(b);};
+  const mk=(label,m)=>{const b=document.createElement('button');b.className='mtab'+(currentMonth===m?' on':'');b.textContent=label;b.onclick=()=>{currentMonth=m;renderAll();scrollToCards();};bar.appendChild(b);};
   mk('전체','전체');months.forEach(m=>mk(m,m));
 }
 
-// ── 직무별: 데이터에 있는 모든 직무 동적으로 표시 ──
+function scrollToCards(){
+  setTimeout(()=>{
+    const el=$('main-content');
+    if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+  },80);
+}
+
+// ── 직무별: 고정 3줄 구조 ──
+const MGMT_ROLES=['재무회계','총무','인사','CEO','경영지원','재무','회계'];
+const AE_GROUP=['AE','브랜드마케터','퍼포먼스마케터'];
+
 function getRoleLabel(r){
-  if(r==='AE')return'AE';
   if(r==='CD')return'콘텐츠디자이너';
+  if(r==='AI')return'AI Studio';
   return r;
 }
+
 function renderStats(){
   const vis=filteredEmps();
   $('s-total').textContent=vis.length;
   $('s-new').textContent=vis.filter(e=>!e.year||e.year==='신입').length;
   $('s-exp').textContent=vis.filter(e=>e.year&&e.year!=='신입').length;
-  // 직무별 동적 생성 — 숫자 상단 정렬, 라벨 아래 고정
+
   const roleCnt={};
   vis.forEach(e=>{const r=e.role||'기타';roleCnt[r]=(roleCnt[r]||0)+1;});
-  const sorted=Object.entries(roleCnt).sort((a,b)=>b[1]-a[1]);
-  $('s-roles-row').innerHTML=sorted.map(([r,n])=>
-    '<div class="stat-mini"><div class="stat-mini-n">'+n+'</div><div class="stat-mini-l">'+esc(getRoleLabel(r))+'</div></div>'
-  ).join('');
+
+  // 그룹별 집계
+  const CD_ROLES=['CD','콘텐츠디자이너'];
+
+  const groupCnt={AE:0,PD:0,CD:0,경영직군:0,기타:0};
+  Object.entries(roleCnt).forEach(([r,n])=>{
+    const label=getRoleLabel(r);
+    if(AE_GROUP.includes(r)||AE_GROUP.includes(label)) groupCnt['AE']+=n;
+    else if(r==='PD'||label==='PD') groupCnt['PD']+=n;
+    else if(CD_ROLES.includes(r)||CD_ROLES.includes(label)) groupCnt['CD']+=n;
+    else if(MGMT_ROLES.some(m=>r.includes(m)||label.includes(m))) groupCnt['경영직군']+=n;
+    else groupCnt['기타']+=n;
+  });
+
+  const panel=$('s-roles-panel');
+  panel.innerHTML='';
+  const rowDefs=[
+    [{key:'AE',label:'AE (마케터 포함)'},{key:'PD',label:'PD'}],
+    [{key:'CD',label:'콘텐츠디자이너'}],
+    [{key:'경영직군',label:'경영직군'},{key:'기타',label:'기타'}],
+  ];
+  rowDefs.forEach(row=>{
+    const items=row.filter(({key})=>groupCnt[key]>0);
+    if(!items.length)return;
+    const rowEl=document.createElement('div');
+    rowEl.className='stat-group-row';
+    rowEl.style.marginBottom='10px';
+    items.forEach(({key,label})=>{
+      const div=document.createElement('div');
+      div.className='stat-mini';
+      div.innerHTML='<div class="stat-mini-n">'+groupCnt[key]+'</div><div class="stat-mini-l">'+esc(label)+'</div>';
+      rowEl.appendChild(div);
+    });
+    panel.appendChild(rowEl);
+  });
 }
 
-// ── 본부별: 5개 이상이면 접기/더보기 ──
+// ── 본부별 ──
 let deptExpanded=false;
 function toggleDept(){
   deptExpanded=!deptExpanded;
@@ -432,19 +483,12 @@ function renderDeptBars(){
   const sorted=Object.entries(cnt).sort((a,b)=>b[1]-a[1]);const max=sorted[0]?sorted[0][1]:1;
   const bars=$('dept-bars');
   bars.innerHTML=sorted.map(([k,v])=>'<div class="dept-bar-row"><span class="dept-bar-name">'+esc(k)+'</span><div class="dept-bar-track"><div class="dept-bar-fill" style="width:'+Math.round(v/max*100)+'%"></div></div><span class="dept-bar-count">'+v+'</span></div>').join('');
-  // 5개 초과 시 접힌 상태, 이하면 버튼 숨김
   const btn=$('dept-toggle-btn');
-  if(sorted.length>5){
-    bars.classList.toggle('dept-bars-collapsed',!deptExpanded);
-    btn.style.display='block';
-    btn.textContent=deptExpanded?'접기 ▴':'더보기 ▾';
-  }else{
-    bars.classList.remove('dept-bars-collapsed');
-    btn.style.display='none';
-  }
+  if(sorted.length>5){bars.classList.toggle('dept-bars-collapsed',!deptExpanded);btn.style.display='block';btn.textContent=deptExpanded?'접기 ▴':'더보기 ▾';}
+  else{bars.classList.remove('dept-bars-collapsed');btn.style.display='none';}
 }
 
-// ── 필터: 3줄로 분리, 모든 직무 동적 표시, AI→AI Studio ──
+// ── 필터: 멀티셀렉트, AI Studio 표기, 3줄 ──
 function normDisplayRole(r){
   if(r==='AE')return'AE';
   if(r==='CD')return'콘텐츠디자이너';
@@ -459,21 +503,57 @@ function renderFilters(){
 
   const makeRow=()=>{const r=document.createElement('div');r.className='filter-row';bar.appendChild(r);return r;};
   const fl=(row,t)=>{const s=document.createElement('span');s.className='fl';s.textContent=t;row.appendChild(s);};
-  const fb=(row,label,f,grp)=>{const b=document.createElement('button');b.className='fb'+(currentFilter===f&&currentFilterGroup===grp?' on':'');b.textContent=label;b.onclick=()=>{currentFilter=f;currentFilterGroup=grp;renderAll();};row.appendChild(b);};
+
+  // 멀티셀렉트 버튼
+  const fbDept=(row,label,key)=>{
+    const b=document.createElement('button');
+    const isAll=key==='all';
+    const active=isAll?(activeDepts.size===0):activeDepts.has(key);
+    b.className='fb'+(active?' on':'');
+    b.textContent=label;
+    b.onclick=()=>{
+      if(isAll){activeDepts.clear();}
+      else{if(activeDepts.has(key))activeDepts.delete(key);else activeDepts.add(key);}
+      renderAll();scrollToCards();
+    };
+    row.appendChild(b);
+  };
+  const fbRole=(row,label,key)=>{
+    const b=document.createElement('button');
+    const active=activeRoles.has(key);
+    b.className='fb'+(active?' on':'');
+    b.textContent=label;
+    b.onclick=()=>{
+      if(activeRoles.has(key))activeRoles.delete(key);else activeRoles.add(key);
+      renderAll();scrollToCards();
+    };
+    row.appendChild(b);
+  };
+  const fbYear=(row,label,key)=>{
+    const b=document.createElement('button');
+    const active=activeYears.has(key);
+    b.className='fb'+(active?' on':'');
+    b.textContent=label;
+    b.onclick=()=>{
+      if(activeYears.has(key))activeYears.delete(key);else activeYears.add(key);
+      renderAll();scrollToCards();
+    };
+    row.appendChild(b);
+  };
 
   // 줄1: 본부
   const row1=makeRow();
-  fl(row1,'본부');fb(row1,'전체','all','dept');
-  depts.forEach(d=>fb(row1,d,d,'dept'));
+  fl(row1,'본부');fbDept(row1,'전체','all');
+  depts.forEach(d=>fbDept(row1,d,d));
 
-  // 줄2: 직무 (데이터에 있는 모든 직무)
+  // 줄2: 직무
   const row2=makeRow();
   fl(row2,'직무');
-  roles.forEach(r=>fb(row2,normDisplayRole(r),r,'role'));
+  roles.forEach(r=>fbRole(row2,normDisplayRole(r),r));
 
   // 줄3: 연차
   const row3=makeRow();
-  fl(row3,'연차');fb(row3,'신입','신입','year');fb(row3,'경력','경력','year');
+  fl(row3,'연차');fbYear(row3,'신입','신입');fbYear(row3,'경력','경력');
 }
 function renderMainContent(){
   const main=$('main-content');main.innerHTML='';
@@ -583,7 +663,10 @@ function renderSearchResultBar(){
     .map(([t,cls])=>'<span class="search-chip '+cls+'">'+esc(t)+'</span>').join('');
 }
 function showToast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
-document.addEventListener('keydown',e=>{if(e.key==='Escape')clearSearch();if((e.metaKey||e.ctrlKey)&&e.key==='r'){e.preventDefault();refresh();}});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){clearSearch();activeDepts.clear();activeRoles.clear();activeYears.clear();renderAll();}
+  if((e.metaKey||e.ctrlKey)&&e.key==='r'){e.preventDefault();refresh();}
+});
 if(SHEET_URL){$('setup-banner').classList.add('hidden');$('sheet-url-input').value=SHEET_URL;loadData();}else{setStatus('waiting');renderAll();}
 </script>
 </body>
