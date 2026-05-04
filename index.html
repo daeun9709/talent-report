@@ -210,7 +210,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
   <div class="summary-panel">
     <div class="stat highlight"><div class="stat-n" id="s-total">—</div><div class="stat-l">전체 인원</div></div>
     <div class="stat-group">
-      <div class="stat-group-label">직무별</div>
+      <div class="stat-group-label">직군별</div>
       <div id="s-roles-panel"></div>
     </div>
     <div class="stat-group">
@@ -416,8 +416,9 @@ function scrollToCards(){
 }
 
 // ── 직무별: 고정 3줄 구조 ──
-const MGMT_ROLES=['재무회계','총무','인사','CEO','경영지원','재무','회계'];
-const AE_GROUP=['AE','브랜드마케터','퍼포먼스마케터'];
+const MGMT_ROLES=['재무회계','인사','총무','전략매니저','전략 매니저','파트너십매니저','파트너십 매니저','경영지원'];
+const AE_GROUP=['AE','퍼포먼스마케터','브랜드마케터','콘텐츠에디터'];
+const CD_GROUP=['CD','콘텐츠디자이너','PD'];
 
 function getRoleLabel(r){
   if(r==='CD')return'콘텐츠디자이너';
@@ -434,40 +435,30 @@ function renderStats(){
   const roleCnt={};
   vis.forEach(e=>{const r=e.role||'기타';roleCnt[r]=(roleCnt[r]||0)+1;});
 
-  // 그룹별 집계
-  const CD_ROLES=['CD','콘텐츠디자이너'];
-
-  const groupCnt={AE:0,PD:0,CD:0,경영직군:0,기타:0};
+  // 직군별 집계
+  const groups={기획직군:0,제작직군:0,경영직군:0,기타:0};
   Object.entries(roleCnt).forEach(([r,n])=>{
-    const label=getRoleLabel(r);
-    if(AE_GROUP.includes(r)||AE_GROUP.includes(label)) groupCnt['AE']+=n;
-    else if(r==='PD'||label==='PD') groupCnt['PD']+=n;
-    else if(CD_ROLES.includes(r)||CD_ROLES.includes(label)) groupCnt['CD']+=n;
-    else if(MGMT_ROLES.some(m=>r.includes(m)||label.includes(m))) groupCnt['경영직군']+=n;
-    else groupCnt['기타']+=n;
+    const isAEGroup=AE_GROUP.some(k=>r===k||r.replace(/\s/g,'')=== k.replace(/\s/g,''));
+    const isCDGroup=CD_GROUP.some(k=>r===k||r.replace(/\s/g,'')=== k.replace(/\s/g,''));
+    const isMgmt=MGMT_ROLES.some(k=>r.replace(/\s/g,'')===k.replace(/\s/g,'')||r.includes(k)||k.includes(r));
+    if(isAEGroup) groups['기획직군']+=n;
+    else if(isCDGroup) groups['제작직군']+=n;
+    else if(isMgmt) groups['경영직군']+=n;
+    else groups['기타']+=n;
   });
 
   const panel=$('s-roles-panel');
   panel.innerHTML='';
-  const rowDefs=[
-    [{key:'AE',label:'AE (마케터 포함)'},{key:'PD',label:'PD'}],
-    [{key:'CD',label:'콘텐츠디자이너'}],
-    [{key:'경영직군',label:'경영직군'},{key:'기타',label:'기타'}],
-  ];
-  rowDefs.forEach(row=>{
-    const items=row.filter(({key})=>groupCnt[key]>0);
-    if(!items.length)return;
-    const rowEl=document.createElement('div');
-    rowEl.className='stat-group-row';
-    rowEl.style.marginBottom='10px';
-    items.forEach(({key,label})=>{
-      const div=document.createElement('div');
-      div.className='stat-mini';
-      div.innerHTML='<div class="stat-mini-n">'+groupCnt[key]+'</div><div class="stat-mini-l">'+esc(label)+'</div>';
-      rowEl.appendChild(div);
-    });
-    panel.appendChild(rowEl);
+  const rowEl=document.createElement('div');
+  rowEl.className='stat-group-row';
+  [['기획직군','기획직군'],['제작직군','제작직군'],['경영직군','경영직군'],['기타','기타']].forEach(([key,label])=>{
+    if(groups[key]===0)return;
+    const div=document.createElement('div');
+    div.className='stat-mini';
+    div.innerHTML='<div class="stat-mini-n">'+groups[key]+'</div><div class="stat-mini-l">'+esc(label)+'</div>';
+    rowEl.appendChild(div);
   });
+  panel.appendChild(rowEl);
 }
 
 // ── 본부별 ──
@@ -572,8 +563,10 @@ function renderMainContent(){
 function normalizeRole(r){
   if(!r)return'AE';
   const v=r.trim().toLowerCase();
-  if(v==='cd'||v.includes('콘텐츠')||v.includes('content')||v.includes('designer'))return'CD';
-  if(v==='ae'||v.includes('account'))return'AE';
+  // 콘텐츠에디터는 CD로 변환하지 않음
+  if(v.includes('에디터'))return r.trim();
+  if(v==='cd'||v.includes('콘텐츠디자이너')||v.includes('content designer'))return'CD';
+  if(v==='ae'||v.includes('account executive'))return'AE';
   return r.trim();
 }
 
