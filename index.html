@@ -129,8 +129,48 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .month-section-count{font-size:12px;color:#aaa}
 .month-section-line{flex:1;height:1px;background:#eaeae8}
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.card{background:#fff;border:1px solid #eaeae8;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;position:relative;transition:box-shadow .2s,border-color .2s}
+.card{background:#fff;border:1px solid #eaeae8;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;position:relative;transition:box-shadow .2s,border-color .2s;cursor:pointer}
 .card:hover{border-color:#d0d0ce;box-shadow:0 4px 16px rgba(0,0,0,.07)}
+
+/* ── 상세 모달 ── */
+.detail-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;display:flex;align-items:center;justify-content:center;padding:1.5rem;backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .25s}
+.detail-bg.open{opacity:1;pointer-events:all}
+.detail-modal{background:#fff;border-radius:20px;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;position:relative;transform:scale(.95) translateY(12px);transition:transform .25s}
+.detail-bg.open .detail-modal{transform:scale(1) translateY(0)}
+.detail-close{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;background:#f4f3f0;border:none;cursor:pointer;font-size:16px;color:#888;z-index:10;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.detail-close:hover{background:#e8e7e4;color:#333}
+.detail-photo{width:100%;aspect-ratio:16/7;overflow:hidden;position:relative;background:linear-gradient(135deg,#f0efe9,#e8e7e1);border-radius:20px 20px 0 0}
+.detail-photo img{width:100%;height:100%;object-fit:cover;object-position:center top}
+.detail-photo-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.detail-photo-initials{font-size:72px;font-weight:700;color:#c8c7c0}
+.detail-role-badge{position:absolute;top:14px;left:14px;font-size:11px;padding:4px 12px;border-radius:20px;font-weight:600}
+.detail-body{padding:1.5rem 1.75rem 2rem;display:flex;flex-direction:column;gap:14px}
+.detail-name-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.detail-name{font-size:24px;font-weight:700;color:#1a1a1a}
+.detail-project{font-size:14px;color:#bbb;font-weight:400}
+.detail-meta{font-size:13px;color:#888;margin-top:2px}
+.detail-core{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;background:#f7f6f2;border-radius:10px;align-self:flex-start}
+.detail-core-label{font-size:9px;font-weight:700;color:#bbb;letter-spacing:.06em;text-transform:uppercase}
+.detail-core-name{font-size:13px;font-weight:700;color:#1a1a1a}
+.detail-divider{border:none;border-top:1px solid #f0efe9}
+.detail-tags-grid{display:flex;flex-direction:column;gap:10px}
+.detail-tag-row{display:flex;gap:10px;align-items:flex-start}
+.detail-cat-label{font-size:10px;font-weight:700;color:#bbb;min-width:52px;padding-top:4px;letter-spacing:.04em;text-transform:uppercase;flex-shrink:0}
+.detail-tag-list{display:flex;gap:5px;flex-wrap:wrap}
+.detail-tag{font-size:11px;padding:4px 11px;border-radius:20px;line-height:1.5;border:1px solid}
+
+/* 이전/다음 버튼 */
+.detail-nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.75rem;border-top:1px solid #f0efe9;background:#faf9f7;border-radius:0 0 20px 20px}
+.detail-nav-btn{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#555;background:none;border:1px solid #e0e0dd;border-radius:9px;padding:7px 14px;cursor:pointer;transition:all .15s}
+.detail-nav-btn:hover{border-color:#bbb;color:#1a1a1a}
+.detail-nav-btn:disabled{opacity:.3;cursor:not-allowed}
+.detail-nav-info{font-size:11px;color:#aaa;text-align:center}
+
+@media(max-width:600px){
+  .detail-bg{padding:.75rem}
+  .detail-body{padding:1.25rem 1.25rem 1.5rem}
+  .detail-name{font-size:20px}
+}
 .photo-wrap{width:100%;aspect-ratio:3/2;overflow:hidden;position:relative}
 .photo-wrap img{width:100%;height:100%;object-fit:cover;object-position:center top;transition:transform .3s}
 .card:hover .photo-wrap img{transform:scale(1.03)}
@@ -162,6 +202,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .no-data{text-align:center;padding:3rem;color:#ccc;font-size:14px;grid-column:1/-1}
 .toast{position:fixed;bottom:24px;right:24px;background:#1a1a1a;color:#fff;font-size:12px;padding:10px 16px;border-radius:10px;z-index:200;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;font-weight:500}
 .toast.show{opacity:1;transform:translateY(0)}
+.back-to-top{position:fixed;bottom:72px;right:24px;width:40px;height:40px;border-radius:50%;background:#1a1a1a;color:#fff;border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;z-index:199;opacity:0;transform:translateY(8px);transition:all .3s;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.back-to-top:hover{background:#333;transform:translateY(4px)}
+.back-to-top.show{opacity:1;transform:translateY(0)}
 @media(max-width:1200px){.grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}.summary-panel{grid-template-columns:1fr 1fr}.dept-stat{display:none}}
 @media(max-width:480px){.grid{grid-template-columns:1fr}.page{padding:1rem 1rem 2rem}.kw-label{width:80px}.kw-names{display:none}}
@@ -264,6 +307,35 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
   <div id="main-content"></div>
 </div>
 <div class="toast" id="toast"></div>
+<button class="back-to-top" id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="맨 위로">↑</button>
+
+<!-- 상세 모달 -->
+<div class="detail-bg" id="detail-bg" onclick="if(event.target===this)closeDetail()">
+  <div class="detail-modal" id="detail-modal">
+    <button class="detail-close" onclick="closeDetail()">✕</button>
+    <div class="detail-photo" id="detail-photo"></div>
+    <div class="detail-body">
+      <div>
+        <div class="detail-name-row">
+          <span class="detail-name" id="detail-name"></span>
+          <span class="detail-project" id="detail-project"></span>
+        </div>
+        <div class="detail-meta" id="detail-meta"></div>
+      </div>
+      <div class="detail-core" id="detail-core" style="display:none">
+        <span class="detail-core-label">Core Identity</span>
+        <span class="detail-core-name" id="detail-core-name"></span>
+      </div>
+      <hr class="detail-divider">
+      <div class="detail-tags-grid" id="detail-tags"></div>
+    </div>
+    <div class="detail-nav">
+      <button class="detail-nav-btn" id="detail-prev" onclick="navigateDetail(-1)">← 이전</button>
+      <span class="detail-nav-info" id="detail-nav-info"></span>
+      <button class="detail-nav-btn" id="detail-next" onclick="navigateDetail(1)">다음 →</button>
+    </div>
+  </div>
+</div>
 <script>
 // ═══════════════════════════════════════════════════════
 // ★ 여기에 구글 시트 CSV URL을 붙여넣으세요 ★
@@ -410,9 +482,12 @@ function renderMonthTabs(){
 
 function scrollToCards(){
   setTimeout(()=>{
-    const el=$('main-content');
-    if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
-  },80);
+    const el=$('filter-bar');
+    if(el){
+      const y=el.getBoundingClientRect().top+window.scrollY-16;
+      window.scrollTo({top:y,behavior:'smooth'});
+    }
+  },60);
 }
 
 // ── 직무별: 고정 3줄 구조 ──
@@ -600,6 +675,7 @@ function makePhotoEl(emp){
 
 function makeCard(emp){
   const card=document.createElement('div');card.className='card';
+  card.onclick=()=>openDetail(emp.id);
   const rLabel=emp.role==='CD'?'콘텐츠디자이너':emp.role;
   const rClass=emp.role==='AE'?'ae':emp.role==='CD'?'cd':'other';
   const yLabel=emp.year||'신입';
@@ -656,7 +732,92 @@ function renderSearchResultBar(){
     .map(([t,cls])=>'<span class="search-chip '+cls+'">'+esc(t)+'</span>').join('');
 }
 function showToast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+window.addEventListener('scroll',()=>{
+  const btn=$('back-to-top');
+  if(window.scrollY>300)btn.classList.add('show');
+  else btn.classList.remove('show');
+});
+// ── 상세 모달 ─────────────────────────────────
+let detailList=[];  // 현재 필터된 순서 목록
+let detailIdx=0;
+
+function openDetail(empId){
+  detailList=filteredEmps();
+  detailIdx=detailList.findIndex(e=>e.id===empId);
+  if(detailIdx===-1)return;
+  renderDetail();
+  document.getElementById('detail-bg').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeDetail(){
+  document.getElementById('detail-bg').classList.remove('open');
+  document.body.style.overflow='';
+}
+function navigateDetail(dir){
+  detailIdx=Math.max(0,Math.min(detailList.length-1,detailIdx+dir));
+  renderDetail();
+}
+function renderDetail(){
+  const emp=detailList[detailIdx];
+  if(!emp)return;
+
+  // 사진
+  const photoEl=$('detail-photo');
+  const rClass=emp.role==='AE'?'ae':emp.role==='CD'?'cd':'other';
+  const rLabel=emp.role==='CD'?'콘텐츠디자이너':emp.role;
+  const yLabel=emp.year||'신입';
+  const photoUrl=toDirectPhotoUrl(emp.photo||'');
+  photoEl.innerHTML=(photoUrl
+    ?`<img src="${esc(photoUrl)}" alt="${esc(emp.name)}" referrerpolicy="no-referrer" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="detail-photo-placeholder" style="display:none"><span class="detail-photo-initials">${esc(emp.name.charAt(0))}</span></div>`
+    :`<div class="detail-photo-placeholder"><span class="detail-photo-initials">${esc(emp.name.charAt(0))}</span></div>`
+  )+`<span class="detail-role-badge ${rClass}">${esc(rLabel)} / ${esc(yLabel)}</span>`;
+
+  // 이름 / 소속
+  $('detail-name').textContent=emp.name;
+  $('detail-project').textContent=emp.project?'· '+emp.project:'';
+  $('detail-meta').textContent=emp.dept+(emp.month?' · '+emp.month:'');
+
+  // Core Identity
+  const coreEl=$('detail-core');
+  if(emp.coreIdentity){
+    coreEl.style.display='inline-flex';
+    $('detail-core-name').textContent=emp.coreIdentity;
+  }else{coreEl.style.display='none';}
+
+  // 태그
+  const cats=[
+    {key:'award',label:'수상',cls:'t-award'},
+    {key:'career',label:'Career',cls:'t-career'},
+    {key:'skills',label:'Skills',cls:'t-skills'},
+    {key:'culture',label:'Culture',cls:'t-culture'},
+  ];
+  $('detail-tags').innerHTML=cats.map(({key,label,cls})=>`
+    <div class="detail-tag-row">
+      <span class="detail-cat-label">${label}</span>
+      <div class="detail-tag-list">
+        ${!(emp[key]||[]).length
+          ?'<span style="font-size:12px;color:#ccc">—</span>'
+          :(emp[key]||[]).map(t=>`<span class="detail-tag ${cls}">${esc(t)}</span>`).join('')}
+      </div>
+    </div>`).join('');
+
+  // 이전/다음 버튼
+  $('detail-prev').disabled=detailIdx===0;
+  $('detail-next').disabled=detailIdx===detailList.length-1;
+  $('detail-nav-info').textContent=`${detailIdx+1} / ${detailList.length}`;
+
+  // 모달 스크롤 맨 위로
+  document.getElementById('detail-modal').scrollTop=0;
+}
+
+// 키보드 방향키 네비게이션
 document.addEventListener('keydown',e=>{
+  if(document.getElementById('detail-bg').classList.contains('open')){
+    if(e.key==='ArrowLeft')navigateDetail(-1);
+    if(e.key==='ArrowRight')navigateDetail(1);
+    if(e.key==='Escape'){closeDetail();return;}
+  }
   if(e.key==='Escape'){clearSearch();activeDepts.clear();activeRoles.clear();activeYears.clear();renderAll();}
   if((e.metaKey||e.ctrlKey)&&e.key==='r'){e.preventDefault();refresh();}
 });
