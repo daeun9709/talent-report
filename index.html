@@ -434,7 +434,8 @@ async function loadData(){
       skills:parseTags(r[col('skills')]),culture:parseTags(r[col('culture')]),
       photo:r[col('photo')]||'',
       school:r[col('school')]||'',
-      portfolio:r[col('portfolio')]||r[col('link')]||'',
+      resume:r[col('resume')]||r[col('이력서')]||'',
+      portfolio:r[col('portfolio')]||r[col('포트폴리오')]||'',
     })).filter(e=>e.name);
     const seen=new Set(employees.map(e=>e.month));
     months=MONTH_ORDER.filter(m=>seen.has(m));
@@ -693,7 +694,10 @@ function makeCard(emp){
   const rClass=emp.role==='AE'?'ae':emp.role==='CD'?'cd':'other';
   const yLabel=emp.year||'신입';
   const nameRow='<div class="card-name-row"><span class="card-name">'+esc(emp.name)+'</span>'+(emp.school?'<span class="card-school">'+esc(emp.school)+'</span>':'')+'</div>'+(emp.project?'<div class="card-project-inline">· '+esc(emp.project)+'</div>':'');
-  const portfolioBtn=emp.portfolio?'<a href="'+esc(emp.portfolio)+'" target="_blank" rel="noopener" class="portfolio-link" onclick="event.stopPropagation()">🔗 이력서/포트폴리오</a>':'';
+  const portfolioBtn=[
+    emp.resume?`<a href="${esc(emp.resume)}" target="_blank" rel="noopener" class="portfolio-link" onclick="event.stopPropagation()">📄 이력서</a>`:'',
+    emp.portfolio?`<a href="${esc(emp.portfolio)}" target="_blank" rel="noopener" class="portfolio-link" onclick="event.stopPropagation()">🖼️ 포트폴리오</a>`:'',
+  ].filter(Boolean).join('');
   const coreBox=emp.coreIdentity?'<div class="core-box"><span class="core-title">Core Identity</span><span class="core-name">'+esc(emp.coreIdentity)+'</span></div>':'';
   card.innerHTML='<div class="photo-wrap">'+makePhotoEl(emp)+'<span class="role-badge '+rClass+'">'+esc(rLabel)+' / '+esc(yLabel)+'</span></div><div class="card-body"><div>'+nameRow+'<div class="card-meta">'+esc(emp.dept)+'</div>'+portfolioBtn+'</div>'+coreBox+'<hr class="divider"><div class="tags-grid"><div class="tag-row"><span class="cat-label">수상</span><div class="tag-list">'+tagsHtml(emp.award,'t-award')+'</div></div><div class="tag-row"><span class="cat-label">Career</span><div class="tag-list">'+tagsHtml(emp.career,'t-career')+'</div></div><div class="tag-row"><span class="cat-label">Skills</span><div class="tag-list">'+tagsHtml(emp.skills,'t-skills')+'</div></div><div class="tag-row"><span class="cat-label">Culture</span><div class="tag-list">'+tagsHtml(emp.culture,'t-culture')+'</div></div></div></div>';
   return card;
@@ -792,11 +796,20 @@ function renderDetail(){
   $('detail-project').textContent=emp.project?'· '+emp.project:'';
   $('detail-meta').textContent=[emp.dept, emp.school].filter(Boolean).join('  ·  ')+(emp.month?' · '+emp.month:'');
 
-  // 포트폴리오 링크
-  let pfEl=document.getElementById('detail-portfolio');
-  if(!pfEl){pfEl=document.createElement('a');pfEl.id='detail-portfolio';pfEl.target='_blank';pfEl.rel='noopener';pfEl.className='portfolio-link';pfEl.style.cssText='margin-bottom:2px;align-self:flex-start';pfEl.style.display='none';document.getElementById('detail-meta').insertAdjacentElement('afterend',pfEl);}
-  if(emp.portfolio){pfEl.href=emp.portfolio;pfEl.textContent='🔗 이력서/포트폴리오 보기';pfEl.style.display='inline-flex';}
-  else{pfEl.style.display='none';}
+  // 이력서 / 포트폴리오 링크 (각각)
+  ['detail-resume','detail-portfolio'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.remove();
+  });
+  const linkWrap=document.createElement('div');
+  linkWrap.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px';
+  if(emp.resume){
+    const a=document.createElement('a');a.id='detail-resume';a.href=emp.resume;a.target='_blank';a.rel='noopener';a.className='portfolio-link';a.textContent='📄 이력서';linkWrap.appendChild(a);
+  }
+  if(emp.portfolio){
+    const a=document.createElement('a');a.id='detail-portfolio';a.href=emp.portfolio;a.target='_blank';a.rel='noopener';a.className='portfolio-link';a.textContent='🖼️ 포트폴리오';linkWrap.appendChild(a);
+  }
+  if(linkWrap.children.length) $('detail-meta').insertAdjacentElement('afterend',linkWrap);
 
   // Core Identity
   const coreEl=$('detail-core');
