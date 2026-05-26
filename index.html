@@ -187,17 +187,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .role-badge.ae{background:rgba(20,74,140,.9);color:#fff}
 .role-badge.cd{background:rgba(108,30,58,.9);color:#fff}
 .role-badge.other{background:rgba(40,40,40,.85);color:#fff}
+.school-badge{position:absolute;bottom:9px;left:9px;background:rgba(255,255,255,.92);border-radius:6px;padding:3px 9px;backdrop-filter:blur(4px);font-size:10px;font-weight:600;color:#1a1a1a;max-width:calc(100% - 18px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .card-body{padding:12px 13px 14px;display:flex;flex-direction:column;gap:8px;flex:1}
-.card-name-row{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin-bottom:1px}
+.card-name-row{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin-bottom:3px}
 .card-name{font-size:15px;font-weight:700;color:#1a1a1a}
-.card-school{font-size:10px;color:#bbb;background:#f4f3f0;border-radius:4px;padding:1px 6px;font-weight:500;white-space:nowrap;align-self:center}
-.card-project-inline{font-size:11px;color:#bbb;font-weight:400;margin-top:1px;display:block}
-.portfolio-link{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:#aaa;text-decoration:none;padding:3px 8px;border:1px solid #e8e8e5;border-radius:6px;transition:all .15s;margin-top:4px}
+.card-dept{font-size:11px;color:#aaa;font-weight:400}
+.card-project-inline{display:flex;align-items:center;gap:5px;margin-bottom:7px}
+.card-project-label{font-size:9px;font-weight:700;color:#bbb;letter-spacing:.05em;text-transform:uppercase;flex-shrink:0}
+.card-project-value{font-size:12px;font-weight:700;color:#4a90e2}
+.card-link-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:2px}
+.portfolio-link{display:flex;align-items:center;justify-content:center;gap:4px;font-size:10px;font-weight:500;color:#666;text-decoration:none;padding:5px 0;border:1px solid #e8e8e5;border-radius:7px;transition:all .15s;white-space:nowrap}
 .portfolio-link:hover{color:#1a1a1a;border-color:#bbb;background:#faf9f7}
 .card-meta{font-size:11px;color:#aaa}
-.core-box{display:flex;align-items:center;gap:8px;padding:6px 10px;background:#f7f6f2;border-radius:8px}
-.core-title{font-size:9px;font-weight:700;color:#bbb;flex-shrink:0;letter-spacing:.06em;text-transform:uppercase}
-.core-name{font-size:12px;font-weight:700;color:#1a1a1a}
+.core-box{display:none}
+.t-identity{background:#f0ede6;color:#3a3530;border-color:#d8d3c8}
 .divider{border:none;border-top:1px solid #f0efe9}
 .tags-grid{display:flex;flex-direction:column;gap:5px}
 .tag-row{display:flex;gap:6px;align-items:flex-start}
@@ -693,13 +696,37 @@ function makeCard(emp){
   const rLabel=emp.role==='CD'?'콘텐츠디자이너':emp.role;
   const rClass=emp.role==='AE'?'ae':emp.role==='CD'?'cd':'other';
   const yLabel=emp.year||'신입';
-  const nameRow='<div class="card-name-row"><span class="card-name">'+esc(emp.name)+'</span>'+(emp.school?'<span class="card-school">'+esc(emp.school)+'</span>':'')+'</div>'+(emp.project?'<div class="card-project-inline">· '+esc(emp.project)+'</div>':'');
-  const portfolioBtn=[
+  const linkArr=[
     emp.resume?`<a href="${esc(emp.resume)}" target="_blank" rel="noopener" class="portfolio-link" onclick="event.stopPropagation()">📄 이력서</a>`:'',
     emp.portfolio?`<a href="${esc(emp.portfolio)}" target="_blank" rel="noopener" class="portfolio-link" onclick="event.stopPropagation()">🖼️ 포트폴리오</a>`:'',
-  ].filter(Boolean).join('');
-  const coreBox=emp.coreIdentity?'<div class="core-box"><span class="core-title">Core Identity</span><span class="core-name">'+esc(emp.coreIdentity)+'</span></div>':'';
-  card.innerHTML='<div class="photo-wrap">'+makePhotoEl(emp)+'<span class="role-badge '+rClass+'">'+esc(rLabel)+' / '+esc(yLabel)+'</span></div><div class="card-body"><div>'+nameRow+'<div class="card-meta">'+esc(emp.dept)+'</div>'+portfolioBtn+'</div>'+coreBox+'<hr class="divider"><div class="tags-grid"><div class="tag-row"><span class="cat-label">수상</span><div class="tag-list">'+tagsHtml(emp.award,'t-award')+'</div></div><div class="tag-row"><span class="cat-label">Career</span><div class="tag-list">'+tagsHtml(emp.career,'t-career')+'</div></div><div class="tag-row"><span class="cat-label">Skills</span><div class="tag-list">'+tagsHtml(emp.skills,'t-skills')+'</div></div><div class="tag-row"><span class="cat-label">Culture</span><div class="tag-list">'+tagsHtml(emp.culture,'t-culture')+'</div></div></div></div>';
+  ].filter(Boolean);
+  const linkHtml=linkArr.length?`<div class="card-link-grid">${linkArr.join('')}</div>`:'';
+  const schoolBadge=emp.school?`<span class="school-badge">${esc(emp.school)}</span>`:'';
+  const coreTag=emp.coreIdentity?`<div class="tag-row"><span class="cat-label">Identity</span><div class="tag-list"><span class="tag t-identity">${esc(emp.coreIdentity)}</span></div></div>`:'';
+  card.innerHTML=`
+    <div class="photo-wrap">
+      ${makePhotoEl(emp)}
+      <span class="role-badge ${rClass}">${esc(rLabel)} / ${esc(yLabel)}</span>
+      ${schoolBadge}
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="card-name-row">
+          <span class="card-name">${esc(emp.name)}</span>
+          <span class="card-dept">${esc(emp.dept)}</span>
+        </div>
+        ${emp.project?`<div class="card-project-inline"><span class="card-project-label">Project</span><span class="card-project-value">${esc(emp.project)}</span></div>`:''}
+        ${linkHtml}
+      </div>
+      <hr class="divider">
+      <div class="tags-grid">
+        ${coreTag}
+        <div class="tag-row"><span class="cat-label">수상</span><div class="tag-list">${tagsHtml(emp.award,'t-award')}</div></div>
+        <div class="tag-row"><span class="cat-label">Career</span><div class="tag-list">${tagsHtml(emp.career,'t-career')}</div></div>
+        <div class="tag-row"><span class="cat-label">Skills</span><div class="tag-list">${tagsHtml(emp.skills,'t-skills')}</div></div>
+        <div class="tag-row"><span class="cat-label">Culture</span><div class="tag-list">${tagsHtml(emp.culture,'t-culture')}</div></div>
+      </div>
+    </div>`;
   return card;
 }
 function toggleInsight(){
