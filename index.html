@@ -45,6 +45,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .mtab:hover{border-color:#bbb;color:#555}
 .mtab.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
 .summary-panel{display:grid;grid-template-columns:180px 1fr 1fr 1.6fr;gap:10px;margin-bottom:1.25rem;align-items:stretch}
+.summary-panel-top{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr) 1.8fr;gap:10px}
+.summary-panel-bottom{grid-column:1/4;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .stat{background:#fff;border-radius:12px;padding:16px 18px;border:1px solid #eaeae8;display:flex;flex-direction:column;justify-content:center}
 .stat-n{font-size:28px;font-weight:700;color:#1a1a1a;line-height:1}
 .stat-l{font-size:11px;color:#aaa;margin-top:5px}
@@ -57,6 +59,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .stat-mini{display:flex;flex-direction:column;gap:3px;min-width:44px}
 .stat-mini-n{font-size:20px;font-weight:700;color:#1a1a1a;line-height:1}
 .stat-mini-l{font-size:10px;color:#aaa;white-space:nowrap;line-height:1.4}
+.stat-mini-wide{min-width:64px}
 .stat-group-row-wide{display:flex;gap:32px;align-items:flex-start}
 .dept-stat{background:#fff;border-radius:12px;padding:16px 18px;border:1px solid #eaeae8;display:flex;flex-direction:column;justify-content:center}
 .dept-toggle-btn{font-size:10px;color:#bbb;background:none;border:none;cursor:pointer;padding:2px 4px;transition:color .15s}
@@ -71,6 +74,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .dept-bar-fill{height:100%;border-radius:3px;background:#1a1a1a}
 .dept-bar-count{font-size:10px;color:#bbb;width:14px;flex-shrink:0;text-align:right}
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.dept-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.dept-bar-name{font-size:10px;color:#888;width:64px;flex-shrink:0;text-align:right}
+.dept-bar-track{flex:1;height:6px;background:#f0efe9;border-radius:3px;overflow:hidden}
+.dept-bar-fill{height:100%;border-radius:3px;background:#1a1a1a}
+.dept-bar-count{font-size:10px;color:#bbb;width:12px;flex-shrink:0}
 .insight-section{background:#fff;border:1px solid #eaeae8;border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1.25rem}
 .insight-header{display:flex;align-items:center;justify-content:space-between;border-radius:8px;padding:2px 4px;margin:-2px -4px;transition:background .15s;cursor:pointer;user-select:none}
 .insight-header:hover{background:#f7f6f2}
@@ -91,6 +99,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .kw-fill{height:100%;border-radius:6px;display:flex;align-items:center;padding-left:10px;font-size:10px;font-weight:600;color:rgba(255,255,255,.9);transition:width .45s cubic-bezier(.4,0,.2,1)}
 .kw-count{font-size:11px;font-weight:600;color:#999;width:24px;flex-shrink:0;text-align:right}
 .kw-names{font-size:9px;color:#bbb;width:90px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.filter-section{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;align-items:center}
+.fl{font-size:11px;color:#aaa;margin-right:2px}
 .fb{font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid #e0e0dd;background:#fff;color:#888;cursor:pointer;transition:all .15s}
 .fb:hover{border-color:#bbb;color:#333}
 .fb.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a;font-weight:500}
@@ -118,6 +128,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .month-section-title{font-size:16px;font-weight:700;color:#1a1a1a}
 .month-section-count{font-size:12px;color:#aaa}
 .month-section-line{flex:1;height:1px;background:#eaeae8}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 .card{background:#fff;border:1px solid #eaeae8;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;position:relative;transition:box-shadow .2s,border-color .2s;cursor:pointer}
 .card:hover{border-color:#d0d0ce;box-shadow:0 4px 16px rgba(0,0,0,.07)}
 
@@ -128,12 +139,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .detail-bg.open .detail-modal{transform:scale(1) translateY(0)}
 .detail-close{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.15);border:none;cursor:pointer;font-size:14px;color:#fff;z-index:10;display:flex;align-items:center;justify-content:center;transition:background .15s}
 .detail-close:hover{background:rgba(0,0,0,.3)}
+
+/* 상단 컨텐츠 */
 .detail-content{display:flex;flex:1;overflow:hidden}
+
+/* 좌측 사진 */
 .detail-left{width:220px;flex-shrink:0;position:relative;background:linear-gradient(135deg,#f0efe9,#e8e7e1)}
 .detail-left img{width:100%;height:100%;object-fit:cover;object-position:center 15%}
 .detail-photo-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
 .detail-photo-initials{font-size:64px;font-weight:700;color:#c8c7c0}
 .detail-role-badge{position:absolute;bottom:10px;left:10px;font-size:10px;padding:4px 11px;border-radius:20px;font-weight:600;background:rgba(255,255,255,.92);color:#1a1a1a;backdrop-filter:blur(4px)}
+
+/* 우측 내용 */
 .detail-right{flex:1;overflow-y:auto;padding:1.5rem 1.5rem 1rem}
 .detail-name-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:4px}
 .detail-name{font-size:22px;font-weight:700;color:#1a1a1a}
@@ -148,22 +165,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .detail-cat-label{font-size:9px;font-weight:700;color:#bbb;min-width:48px;padding-top:4px;letter-spacing:.04em;text-transform:uppercase;flex-shrink:0}
 .detail-tag-list{display:flex;gap:4px;flex-wrap:wrap}
 .detail-tag{font-size:11px;padding:3px 10px;border-radius:20px;line-height:1.5;border:1px solid}
+
+/* 하단 네비 */
 .detail-nav{display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.25rem;border-top:1px solid #f0efe9;background:#faf9f7;flex-shrink:0}
 .detail-nav-btn{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#555;background:#fff;border:1px solid #e0e0dd;border-radius:8px;padding:6px 14px;cursor:pointer;transition:all .15s}
 .detail-nav-btn:hover{border-color:#bbb;color:#1a1a1a}
 .detail-nav-btn:disabled{opacity:.3;cursor:not-allowed}
 .detail-nav-info{font-size:11px;color:#aaa}
 
-/* ── PREV 이전 근무지 ── */
-.card-prev-inline{display:flex;align-items:center;gap:5px;margin-top:1px;margin-bottom:4px}
-.card-prev-label{font-size:9px;font-weight:700;color:#c8c5be;letter-spacing:.05em;text-transform:uppercase;flex-shrink:0}
-.card-prev-value{font-size:11px;color:#999;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* 모달 내 PREV */
-.detail-prev-row{display:flex;align-items:center;gap:6px;margin-bottom:10px;padding:7px 10px;background:#faf9f7;border-radius:8px;border:1px solid #f0efe9}
-.detail-prev-label{font-size:9px;font-weight:700;color:#bbb;letter-spacing:.05em;text-transform:uppercase;flex-shrink:0}
-.detail-prev-value{font-size:12px;color:#888;font-weight:500}
-
-/* ── 카드 사진 영역 ── */
+@media(max-width:600px){
+  .detail-left{width:140px}
+  .detail-name{font-size:18px}
+  .detail-right{padding:1rem}
+}
 .photo-wrap{width:100%;aspect-ratio:3/2;overflow:hidden;position:relative}
 .photo-wrap img{width:100%;height:100%;object-fit:cover;object-position:center 15%;transition:transform .3s}
 .card:hover .photo-wrap img{transform:scale(1.03)}
@@ -173,35 +187,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .role-badge.ae{background:rgba(20,74,140,.9);color:#fff}
 .role-badge.cd{background:rgba(108,30,58,.9);color:#fff}
 .role-badge.other{background:rgba(40,40,40,.85);color:#fff}
-
-/* 학교 배지: 기존보다 덜 튀게, 반투명 처리 */
-.school-badge{
-  position:absolute;bottom:9px;left:9px;
-  background:rgba(255,255,255,.62);
-  border-radius:6px;padding:3px 9px;
-  backdrop-filter:blur(6px);
-  -webkit-backdrop-filter:blur(6px);
-  font-size:10px;font-weight:600;
-  color:#3a3530;
-  max-width:calc(100% - 18px);
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-  border:1px solid rgba(255,255,255,.4);
-}
-
+.school-badge{position:absolute;bottom:9px;left:9px;background:rgba(255,255,255,.92);border-radius:6px;padding:3px 9px;backdrop-filter:blur(4px);font-size:10px;font-weight:600;color:#1a1a1a;max-width:calc(100% - 18px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .card-body{padding:12px 13px 14px;display:flex;flex-direction:column;gap:8px;flex:1}
-.card-name-row{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin-bottom:2px}
+.card-name-row{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin-bottom:3px}
 .card-name{font-size:15px;font-weight:700;color:#1a1a1a}
 .card-dept{font-size:11px;color:#aaa;font-weight:400}
-.card-project-inline{display:flex;align-items:center;gap:5px;margin-bottom:2px}
+.card-project-inline{display:flex;align-items:center;gap:5px;margin-bottom:7px}
 .card-project-label{font-size:9px;font-weight:700;color:#bbb;letter-spacing:.05em;text-transform:uppercase;flex-shrink:0}
 .card-project-value{font-size:12px;font-weight:700;color:#4a90e2}
 .card-link-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:2px}
 .portfolio-link{display:flex;align-items:center;justify-content:center;gap:4px;font-size:10px;font-weight:500;color:#666;text-decoration:none;padding:5px 0;border:1px solid #e8e8e5;border-radius:7px;transition:all .15s;white-space:nowrap}
 .portfolio-link:hover{color:#1a1a1a;border-color:#bbb;background:#faf9f7}
-
-/* Identity 태그 — 테두리 많이 연하게 */
-.t-identity{background:#f0ede6;color:#3a3530;border-color:#e4e0d8}
-
+.card-meta{font-size:11px;color:#aaa}
+.core-box{display:none}
+.t-identity{background:#f0ede6;color:#3a3530;border:none}
 .divider{border:none;border-top:1px solid #f0efe9}
 .tags-grid{display:flex;flex-direction:column;gap:5px}
 .tag-row{display:flex;gap:6px;align-items:flex-start}
@@ -219,46 +218,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .back-to-top{position:fixed;bottom:72px;right:24px;width:40px;height:40px;border-radius:50%;background:#1a1a1a;color:#fff;border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;z-index:199;opacity:0;transform:translateY(8px);transition:all .3s;box-shadow:0 2px 12px rgba(0,0,0,.2)}
 .back-to-top:hover{background:#333;transform:translateY(4px)}
 .back-to-top.show{opacity:1;transform:translateY(0)}
-
-/* ── 호버 미리보기 팝업 ── */
-.preview-popup{
-  position:fixed;z-index:400;
-  background:#fff;
-  border:1px solid #e8e8e5;
-  border-radius:16px;
-  box-shadow:0 12px 40px rgba(0,0,0,.14),0 2px 8px rgba(0,0,0,.06);
-  width:220px;
-  pointer-events:none;
-  opacity:0;
-  transform:translateY(6px) scale(.97);
-  transition:opacity .18s ease,transform .18s ease;
-  overflow:hidden;
-}
-.preview-popup.show{
-  opacity:1;
-  transform:translateY(0) scale(1);
-}
-.preview-photo{width:100%;height:110px;position:relative;background:linear-gradient(135deg,#f0efe9,#e8e7e1);overflow:hidden}
-.preview-photo img{width:100%;height:100%;object-fit:cover;object-position:center 15%}
-.preview-photo-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
-.preview-initials{font-size:32px;font-weight:700;color:#c8c7c0}
-.preview-role-badge{position:absolute;top:7px;right:7px;font-size:9px;padding:2px 8px;border-radius:20px;font-weight:600}
-.preview-role-badge.ae{background:rgba(20,74,140,.9);color:#fff}
-.preview-role-badge.cd{background:rgba(108,30,58,.9);color:#fff}
-.preview-role-badge.other{background:rgba(40,40,40,.85);color:#fff}
-.preview-body{padding:11px 12px 12px}
-.preview-name{font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:2px}
-.preview-dept{font-size:10px;color:#aaa;margin-bottom:7px}
-.preview-identity{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid #e4e0d8;background:#f0ede6;color:#3a3530;margin-bottom:7px}
-.preview-tags{display:flex;flex-direction:column;gap:4px}
-.preview-tag-row{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
-.preview-cat{font-size:8px;font-weight:700;color:#ccc;letter-spacing:.04em;text-transform:uppercase;min-width:38px;flex-shrink:0}
-.preview-tag{font-size:9px;padding:1px 7px;border-radius:20px;line-height:1.6;border:1px solid}
-.preview-hint{font-size:9px;color:#ccc;text-align:center;margin-top:8px;padding-top:7px;border-top:1px solid #f5f5f3}
-
 @media(max-width:1200px){.grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}.summary-panel{grid-template-columns:1fr 1fr}.dept-stat{display:none}}
-@media(max-width:600px){.detail-left{width:140px}.detail-name{font-size:18px}.detail-right{padding:1rem}}
 @media(max-width:480px){.grid{grid-template-columns:1fr}.page{padding:1rem 1rem 2rem}.kw-label{width:80px}.kw-names{display:none}}
 </style>
 </head>
@@ -267,10 +228,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
   <div class="loading-spinner"></div>
   <span class="loading-text">구글 시트에서 데이터 불러오는 중…</span>
 </div>
-
-<!-- 호버 미리보기 팝업 (전역 1개) -->
-<div class="preview-popup" id="preview-popup"></div>
-
 <div class="page">
   <div class="setup-banner" id="setup-banner">
     <div class="setup-title">📋 구글 시트 연결</div>
@@ -321,10 +278,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
     </div>
     <div class="dept-stat">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <span class="dept-stat-label" style="margin-bottom:0">본부별 인원</span>
-        <button class="dept-toggle-btn" id="dept-toggle-btn" onclick="toggleDept()">더보기 ▾</button>
+        <span class="dept-stat-label" style="margin-bottom:0">Core Identity</span>
       </div>
-      <div id="dept-bars"></div>
+      <div id="identity-bars"></div>
     </div>
   </div>
   <div class="insight-section">
@@ -370,15 +326,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
   <div class="detail-modal" id="detail-modal">
     <button class="detail-close" onclick="closeDetail()">✕</button>
     <div class="detail-content">
+      <!-- 좌측: 사진 -->
       <div class="detail-left" id="detail-photo"></div>
+      <!-- 우측: 내용 -->
       <div class="detail-right">
         <div class="detail-name-row">
           <span class="detail-name" id="detail-name"></span>
           <span class="detail-project" id="detail-project"></span>
         </div>
         <div class="detail-meta" id="detail-meta"></div>
-        <div id="detail-prev-wrap"></div>
-        <div id="detail-links-wrap"></div>
         <div class="detail-core" id="detail-core" style="display:none">
           <span class="detail-core-label">Core Identity</span>
           <span class="detail-core-name" id="detail-core-name"></span>
@@ -394,8 +350,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
     </div>
   </div>
 </div>
-
 <script>
+// ═══════════════════════════════════════════════════════
+// ★ 여기에 구글 시트 CSV URL을 붙여넣으세요 ★
+// 파일을 GitHub에 올리면 모든 사람이 바로 데이터를 볼 수 있어요
+// ═══════════════════════════════════════════════════════
 const DEFAULT_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSIA6s1JyLM3HFWJjY2PW9CpZG-hI70N5YfigjbxrHhMYMaF3V6bfhJ07yKjlx68mJK9kn_pJ5vbKA2/pub?gid=1829718064&single=true&output=csv';
 
 let SHEET_URL = DEFAULT_SHEET_URL || localStorage.getItem('talent_sheet_url') || '';
@@ -440,11 +399,13 @@ function openSetup(){
   $('sheet-url-input').value=SHEET_URL;
   window.scrollTo({top:0,behavior:'smooth'});
 }
+// CORS 프록시 목록 (순서대로 시도)
 const PROXIES=[
-  url=>url,
+  url=>url,  // 직접 시도
   url=>'https://api.allorigins.win/raw?url='+encodeURIComponent(url),
   url=>'https://corsproxy.io/?'+encodeURIComponent(url),
 ];
+
 async function fetchWithProxy(targetUrl){
   const base=targetUrl+(targetUrl.includes('?')?'&':'?')+'_t='+Date.now();
   for(const proxy of PROXIES){
@@ -452,7 +413,7 @@ async function fetchWithProxy(targetUrl){
       const res=await fetch(proxy(base),{cache:'no-store'});
       if(!res.ok)continue;
       const text=await res.text();
-      if(text.includes(','))return text;
+      if(text.includes(','))return text; // CSV면 성공
     }catch(e){continue;}
   }
   throw new Error('모든 경로에서 실패');
@@ -460,28 +421,19 @@ async function fetchWithProxy(targetUrl){
 
 async function loadData(){
   if(!SHEET_URL){setStatus('waiting');return;}
-  setStatus('loading');$('loading-overlay').classList.remove('hidden');$('error-box').style.display='none';
-  try{
+  setStatus('loading');$('loading-overlay').classList.remove('hidden');$('error-box').style.display='none';  try{
     const text=await fetchWithProxy(SHEET_URL);
     const rows=parseCSV(text);
     if(rows.length<2)throw new Error('데이터 없음');
     const header=rows[0].map(h=>h.toLowerCase().replace(/\s/g,''));
     const col=k=>header.indexOf(k);
     employees=rows.slice(1).filter(r=>r.some(c=>c)).map((r,i)=>({
-      id:r[col('id')]||String(i+1),
-      month:r[col('month')]||'1월',
-      name:r[col('name')]||'',
-      role:normalizeRole(r[col('role')]),
-      year:r[col('year')]||'신입',
-      dept:r[col('dept')]||'',
-      deptKey:getDeptKey(r[col('dept')]),
-      project:r[col('project')]||'',
-      prev:r[col('prev')]||r[col('이전근무지')]||r[col('prevcompany')]||'',
+      id:r[col('id')]||String(i+1),month:r[col('month')]||'1월',name:r[col('name')]||'',
+      role:normalizeRole(r[col('role')]),year:r[col('year')]||'신입',dept:r[col('dept')]||'',
+      deptKey:getDeptKey(r[col('dept')]),project:r[col('project')]||'',
       coreIdentity:r[col('core_identity')]||r[col('coreidentity')]||'',
-      award:parseTags(r[col('award')]),
-      career:parseTags(r[col('career')]),
-      skills:parseTags(r[col('skills')]),
-      culture:parseTags(r[col('culture')]),
+      award:parseTags(r[col('award')]),career:parseTags(r[col('career')]),
+      skills:parseTags(r[col('skills')]),culture:parseTags(r[col('culture')]),
       photo:r[col('photo')]||'',
       school:r[col('school')]||'',
       resume:r[col('resume')]||r[col('이력서')]||'',
@@ -507,14 +459,16 @@ function setStatus(s){
   if(s==='loading'){dot.classList.add('loading');txt.textContent='불러오는 중…';}
   if(s==='waiting'){txt.textContent='연결 대기 중';}
 }
+// Core Identity도 검색 대상에 포함
 function empMatchesSearch(emp,q){
   if(!q)return true;
   const all=[...(emp.award||[]),...(emp.career||[]),...(emp.skills||[]),...(emp.culture||[]),
-    emp.name,emp.dept,emp.project,emp.coreIdentity||'',emp.prev||''];
+    emp.name,emp.dept,emp.project,emp.coreIdentity||''];
   return all.some(t=>t&&t.toLowerCase().includes(q.toLowerCase()));
 }
 
-let activeDepts=new Set();
+// ── 멀티 필터 상태 ──
+let activeDepts=new Set();   // 비어있으면 전체
 let activeRoles=new Set();
 let activeYears=new Set();
 
@@ -541,24 +495,38 @@ function renderMonthTabs(){
   const mk=(label,m)=>{const b=document.createElement('button');b.className='mtab'+(currentMonth===m?' on':'');b.textContent=label;b.onclick=()=>{currentMonth=m;renderAll();scrollToCards();};bar.appendChild(b);};
   mk('전체','전체');months.forEach(m=>mk(m,m));
 }
+
 function scrollToCards(){
   setTimeout(()=>{
     const el=$('filter-bar');
-    if(el){const y=el.getBoundingClientRect().top+window.scrollY-16;window.scrollTo({top:y,behavior:'smooth'});}
+    if(el){
+      const y=el.getBoundingClientRect().top+window.scrollY-16;
+      window.scrollTo({top:y,behavior:'smooth'});
+    }
   },60);
 }
 
+// ── 직무별: 고정 3줄 구조 ──
 const MGMT_ROLES=['재무회계','인사','총무','전략매니저','전략 매니저','파트너십매니저','파트너십 매니저','경영지원'];
 const AE_GROUP=['AE','퍼포먼스마케터','브랜드마케터','콘텐츠에디터'];
 const CD_GROUP=['CD','콘텐츠디자이너','PD'];
+
+function getRoleLabel(r){
+  if(r==='CD')return'콘텐츠디자이너';
+  if(r==='AI')return'AI Studio';
+  return r;
+}
 
 function renderStats(){
   const vis=filteredEmps();
   $('s-total').textContent=vis.length;
   $('s-new').textContent=vis.filter(e=>!e.year||e.year==='신입').length;
   $('s-exp').textContent=vis.filter(e=>e.year&&e.year!=='신입').length;
+
   const roleCnt={};
   vis.forEach(e=>{const r=e.role||'기타';roleCnt[r]=(roleCnt[r]||0)+1;});
+
+  // 직군별 집계
   const groups={기획직군:0,제작직군:0,경영직군:0,기타:0};
   Object.entries(roleCnt).forEach(([r,n])=>{
     const isAEGroup=AE_GROUP.some(k=>r===k||r.replace(/\s/g,'')=== k.replace(/\s/g,''));
@@ -569,34 +537,56 @@ function renderStats(){
     else if(isMgmt) groups['경영직군']+=n;
     else groups['기타']+=n;
   });
-  const panel=$('s-roles-panel');panel.innerHTML='';
-  const rowEl=document.createElement('div');rowEl.className='stat-group-row';
+
+  const panel=$('s-roles-panel');
+  panel.innerHTML='';
+  const rowEl=document.createElement('div');
+  rowEl.className='stat-group-row';
   [['기획직군','기획직군'],['제작직군','제작직군'],['경영직군','경영직군'],['기타','기타']].forEach(([key,label])=>{
     if(groups[key]===0)return;
-    const div=document.createElement('div');div.className='stat-mini';
+    const div=document.createElement('div');
+    div.className='stat-mini';
     div.innerHTML='<div class="stat-mini-n">'+groups[key]+'</div><div class="stat-mini-l">'+esc(label)+'</div>';
     rowEl.appendChild(div);
   });
   panel.appendChild(rowEl);
 }
 
-let deptExpanded=false;
-function toggleDept(){
-  deptExpanded=!deptExpanded;
-  const bars=$('dept-bars');
-  bars.classList.toggle('dept-bars-collapsed',!deptExpanded);
-  $('dept-toggle-btn').textContent=deptExpanded?'접기 ▴':'더보기 ▾';
-}
+// ── Core Identity 현황 ───────────────────────
+const CI_LIST=[
+  {key:'Specialist',            desc:'깊이 있는 전문성을 갖춘'},
+  {key:'Generalist',            desc:'다양한 업무 영역을 아우르는'},
+  {key:'Problem Solver',        desc:'어려운 문제 해결에 강점을 지닌'},
+  {key:'Influencer',            desc:'주변을 잘 이끄는'},
+  {key:'Communicator',          desc:'협업과 원활한 소통이 가능한'},
+  {key:'Role Model',            desc:'성실함과 모범적인 태도를 지닌'},
+  {key:'Idea Maker',            desc:'창의성과 혁신을 제안하는'},
+  {key:'High Potential Talent', desc:'빠르게 배우고 성장하는'},
+];
+
 function renderDeptBars(){
-  const cnt={};filteredEmps().forEach(e=>{cnt[e.deptKey]=(cnt[e.deptKey]||0)+1;});
-  const sorted=Object.entries(cnt).sort((a,b)=>b[1]-a[1]);const max=sorted[0]?sorted[0][1]:1;
-  const bars=$('dept-bars');
-  bars.innerHTML=sorted.map(([k,v])=>'<div class="dept-bar-row"><span class="dept-bar-name">'+esc(k)+'</span><div class="dept-bar-track"><div class="dept-bar-fill" style="width:'+Math.round(v/max*100)+'%"></div></div><span class="dept-bar-count">'+v+'</span></div>').join('');
-  const btn=$('dept-toggle-btn');
-  if(sorted.length>5){bars.classList.toggle('dept-bars-collapsed',!deptExpanded);btn.style.display='block';btn.textContent=deptExpanded?'접기 ▴':'더보기 ▾';}
-  else{bars.classList.remove('dept-bars-collapsed');btn.style.display='none';}
+  const cnt={};
+  filteredEmps().forEach(e=>{
+    const ci=e.coreIdentity||'';
+    if(ci)cnt[ci]=(cnt[ci]||0)+1;
+  });
+  const max=Math.max(...Object.values(cnt),1);
+  const el=document.getElementById('identity-bars');
+  if(!el)return;
+  const rows=CI_LIST.filter(c=>cnt[c.key]>0).map(c=>`
+    <div style="margin-bottom:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+        <span style="font-size:10px;color:#999">${esc(c.desc)} <b style="color:#3a3530;font-weight:600">${esc(c.key)}</b></span>
+        <span style="font-size:10px;font-weight:600;color:#888;margin-left:8px;flex-shrink:0">${cnt[c.key]}</span>
+      </div>
+      <div style="width:100%;height:5px;background:#f0efe9;border-radius:3px;overflow:hidden">
+        <div style="height:100%;border-radius:3px;background:#c8b89a;width:${Math.round((cnt[c.key]||0)/max*100)}%;transition:width .4s"></div>
+      </div>
+    </div>`).join('');
+  el.innerHTML=rows||'<div style="font-size:11px;color:#ccc;padding:8px 0">데이터 없음</div>';
 }
 
+// ── 필터: 멀티셀렉트, AI Studio 표기, 3줄 ──
 function normDisplayRole(r){
   if(r==='AE')return'AE';
   if(r==='CD')return'콘텐츠디자이너';
@@ -604,35 +594,65 @@ function normDisplayRole(r){
   return r;
 }
 function renderFilters(){
-  const bar=$('filter-bar');bar.innerHTML='';
+  const bar=$('filter-bar');
+  bar.innerHTML='';
   const depts=[...new Set(employees.map(e=>e.deptKey).filter(Boolean))].sort();
   const roles=[...new Set(employees.map(e=>e.role).filter(Boolean))].sort();
+
   const makeRow=()=>{const r=document.createElement('div');r.className='filter-row';bar.appendChild(r);return r;};
   const fl=(row,t)=>{const s=document.createElement('span');s.className='fl';s.textContent=t;row.appendChild(s);};
+
+  // 멀티셀렉트 버튼
   const fbDept=(row,label,key)=>{
     const b=document.createElement('button');
-    const isAll=key==='all';const active=isAll?(activeDepts.size===0):activeDepts.has(key);
-    b.className='fb'+(active?' on':'');b.textContent=label;
-    b.onclick=()=>{if(isAll){activeDepts.clear();}else{if(activeDepts.has(key))activeDepts.delete(key);else activeDepts.add(key);}renderAll();scrollToCards();};
+    const isAll=key==='all';
+    const active=isAll?(activeDepts.size===0):activeDepts.has(key);
+    b.className='fb'+(active?' on':'');
+    b.textContent=label;
+    b.onclick=()=>{
+      if(isAll){activeDepts.clear();}
+      else{if(activeDepts.has(key))activeDepts.delete(key);else activeDepts.add(key);}
+      renderAll();scrollToCards();
+    };
     row.appendChild(b);
   };
   const fbRole=(row,label,key)=>{
-    const b=document.createElement('button');const active=activeRoles.has(key);
-    b.className='fb'+(active?' on':'');b.textContent=label;
-    b.onclick=()=>{if(activeRoles.has(key))activeRoles.delete(key);else activeRoles.add(key);renderAll();scrollToCards();};
+    const b=document.createElement('button');
+    const active=activeRoles.has(key);
+    b.className='fb'+(active?' on':'');
+    b.textContent=label;
+    b.onclick=()=>{
+      if(activeRoles.has(key))activeRoles.delete(key);else activeRoles.add(key);
+      renderAll();scrollToCards();
+    };
     row.appendChild(b);
   };
   const fbYear=(row,label,key)=>{
-    const b=document.createElement('button');const active=activeYears.has(key);
-    b.className='fb'+(active?' on':'');b.textContent=label;
-    b.onclick=()=>{if(activeYears.has(key))activeYears.delete(key);else activeYears.add(key);renderAll();scrollToCards();};
+    const b=document.createElement('button');
+    const active=activeYears.has(key);
+    b.className='fb'+(active?' on':'');
+    b.textContent=label;
+    b.onclick=()=>{
+      if(activeYears.has(key))activeYears.delete(key);else activeYears.add(key);
+      renderAll();scrollToCards();
+    };
     row.appendChild(b);
   };
-  const row1=makeRow();fl(row1,'본부');fbDept(row1,'전체','all');depts.forEach(d=>fbDept(row1,d,d));
-  const row2=makeRow();fl(row2,'직무');roles.forEach(r=>fbRole(row2,normDisplayRole(r),r));
-  const row3=makeRow();fl(row3,'연차');fbYear(row3,'신입','신입');fbYear(row3,'경력','경력');
-}
 
+  // 줄1: 본부
+  const row1=makeRow();
+  fl(row1,'본부');fbDept(row1,'전체','all');
+  depts.forEach(d=>fbDept(row1,d,d));
+
+  // 줄2: 직무
+  const row2=makeRow();
+  fl(row2,'직무');
+  roles.forEach(r=>fbRole(row2,normDisplayRole(r),r));
+
+  // 줄3: 연차
+  const row3=makeRow();
+  fl(row3,'연차');fbYear(row3,'신입','신입');fbYear(row3,'경력','경력');
+}
 function renderMainContent(){
   const main=$('main-content');main.innerHTML='';
   const makeGrid=emps=>{const g=document.createElement('div');g.className='grid';if(!emps.length){g.innerHTML='<div class="no-data">해당 조건의 인원이 없습니다</div>';}else emps.forEach(e=>g.appendChild(makeCard(e)));return g;};
@@ -646,43 +666,48 @@ function renderMainContent(){
     });
   }else{main.appendChild(makeGrid(filteredEmps()));}
 }
-
+// role 정규화: 어떻게 입력해도 AE/CD로 통일
 function normalizeRole(r){
-  if(!r)return'AE';const v=r.trim().toLowerCase();
+  if(!r)return'AE';
+  const v=r.trim().toLowerCase();
+  // 콘텐츠에디터는 CD로 변환하지 않음
   if(v.includes('에디터'))return r.trim();
   if(v==='cd'||v.includes('콘텐츠디자이너')||v.includes('content designer'))return'CD';
   if(v==='ae'||v.includes('account executive'))return'AE';
   return r.trim();
 }
+
 function toDirectPhotoUrl(url){
   if(!url||!url.trim())return'';
+  // 상대 경로 (GitHub 저장소 내 사진) → 그대로 사용
   if(!url.startsWith('http')&&!url.startsWith('//')){return url;}
+  // 이미 직접 이미지 URL이면 그대로
   if(url.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i))return url;
+  // imgur 직접 링크
   if(url.includes('imgur.com')&&!url.includes('/a/'))return url;
+  // 구글 드라이브 thumbnail
   if(url.includes('thumbnail?id='))return url;
+  // drive.google.com/file/d/FILE_ID 형식
   const m1=url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
   if(m1)return'https://drive.google.com/thumbnail?id='+m1[1]+'&sz=w400';
+  // ?id= 형식
   const m2=url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
   if(m2)return'https://drive.google.com/thumbnail?id='+m2[1]+'&sz=w400';
   return url;
 }
+
 function makePhotoEl(emp){
   const url=toDirectPhotoUrl(emp.photo);
   if(!url)return'<div class="photo-placeholder"><span class="initials">'+esc(emp.name.charAt(0))+'</span></div>';
-  const init=esc(emp.name.charAt(0)),nm=esc(emp.name);
+  const init=esc(emp.name.charAt(0));
+  const nm=esc(emp.name);
   return'<img src="'+esc(url)+'" alt="'+nm+'" referrerpolicy="no-referrer" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'
     +'<div class="photo-placeholder" style="display:none"><span class="initials">'+init+'</span></div>';
 }
 
 function makeCard(emp){
   const card=document.createElement('div');card.className='card';
-  // 클릭 → 상세 모달
   card.onclick=()=>openDetail(emp.id);
-  // 호버 미리보기
-  card.addEventListener('mouseenter',e=>schedulePreview(e,emp));
-  card.addEventListener('mouseleave',cancelPreview);
-  card.addEventListener('mousemove',updatePreviewPos);
-
   const rLabel=emp.role==='CD'?'콘텐츠디자이너':emp.role;
   const rClass=emp.role==='AE'?'ae':emp.role==='CD'?'cd':'other';
   const yLabel=emp.year||'신입';
@@ -693,9 +718,6 @@ function makeCard(emp){
   const linkHtml=linkArr.length?`<div class="card-link-grid">${linkArr.join('')}</div>`:'';
   const schoolBadge=emp.school?`<span class="school-badge">${esc(emp.school)}</span>`:'';
   const coreTag=emp.coreIdentity?`<div class="tag-row"><span class="cat-label">Identity</span><div class="tag-list"><span class="tag t-identity">${esc(emp.coreIdentity)}</span></div></div>`:'';
-  // PREV 종전 근무지
-  const prevHtml=emp.prev?`<div class="card-prev-inline"><span class="card-prev-label">PREV</span><span class="card-prev-value" title="${esc(emp.prev)}">${esc(emp.prev)}</span></div>`:'';
-
   card.innerHTML=`
     <div class="photo-wrap">
       ${makePhotoEl(emp)}
@@ -709,7 +731,6 @@ function makeCard(emp){
           <span class="card-dept">${esc(emp.dept)}</span>
         </div>
         ${emp.project?`<div class="card-project-inline"><span class="card-project-label">Project</span><span class="card-project-value">${esc(emp.project)}</span></div>`:''}
-        ${prevHtml}
         ${linkHtml}
       </div>
       <hr class="divider">
@@ -723,77 +744,6 @@ function makeCard(emp){
     </div>`;
   return card;
 }
-
-// ── 호버 미리보기 로직 ──────────────────────────────
-let previewTimer=null;
-let currentPreviewEmp=null;
-let mouseX=0,mouseY=0;
-
-function schedulePreview(e,emp){
-  cancelPreview();
-  currentPreviewEmp=emp;
-  mouseX=e.clientX;mouseY=e.clientY;
-  previewTimer=setTimeout(()=>showPreview(emp),380);
-}
-function cancelPreview(){
-  clearTimeout(previewTimer);previewTimer=null;
-  const popup=$('preview-popup');
-  popup.classList.remove('show');
-  currentPreviewEmp=null;
-}
-function updatePreviewPos(e){
-  mouseX=e.clientX;mouseY=e.clientY;
-  positionPreview();
-}
-function positionPreview(){
-  const popup=$('preview-popup');
-  const pw=220,ph=popup.offsetHeight||320;
-  const vw=window.innerWidth,vh=window.innerHeight;
-  let x=mouseX+16,y=mouseY-60;
-  if(x+pw>vw-12) x=mouseX-pw-12;
-  if(y+ph>vh-12) y=vh-ph-12;
-  if(y<8) y=8;
-  popup.style.left=x+'px';popup.style.top=y+'px';
-}
-function showPreview(emp){
-  const popup=$('preview-popup');
-  const rClass=emp.role==='AE'?'ae':emp.role==='CD'?'cd':'other';
-  const rLabel=emp.role==='CD'?'콘텐츠디자이너':emp.role;
-  const yLabel=emp.year||'신입';
-  const photoUrl=toDirectPhotoUrl(emp.photo||'');
-  const photoHtml=photoUrl
-    ?`<img src="${esc(photoUrl)}" referrerpolicy="no-referrer" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="preview-photo-placeholder" style="display:none"><span class="preview-initials">${esc(emp.name.charAt(0))}</span></div>`
-    :`<div class="preview-photo-placeholder"><span class="preview-initials">${esc(emp.name.charAt(0))}</span></div>`;
-
-  const identityHtml=emp.coreIdentity?`<div style="margin-bottom:7px"><span class="preview-identity">${esc(emp.coreIdentity)}</span></div>`:'';
-
-  const cats=[
-    {key:'skills',cls:'t-skills',label:'Skills'},
-    {key:'culture',cls:'t-culture',label:'Culture'},
-    {key:'award',cls:'t-award',label:'수상'},
-  ];
-  const tagRowsHtml=cats.map(({key,cls,label})=>{
-    const tags=(emp[key]||[]).filter(t=>t&&t!=='-').slice(0,3);
-    if(!tags.length)return'';
-    return`<div class="preview-tag-row"><span class="preview-cat">${label}</span>${tags.map(t=>`<span class="preview-tag ${cls}">${esc(t)}</span>`).join('')}</div>`;
-  }).filter(Boolean).join('');
-
-  popup.innerHTML=`
-    <div class="preview-photo">
-      ${photoHtml}
-      <span class="preview-role-badge ${rClass}">${esc(rLabel)} / ${esc(yLabel)}</span>
-    </div>
-    <div class="preview-body">
-      <div class="preview-name">${esc(emp.name)}</div>
-      <div class="preview-dept">${esc(emp.dept)}${emp.school?' · '+esc(emp.school):''}</div>
-      ${identityHtml}
-      <div class="preview-tags">${tagRowsHtml||'<span style="font-size:10px;color:#ccc">태그 없음</span>'}</div>
-      <div class="preview-hint">클릭하면 상세 보기</div>
-    </div>`;
-  positionPreview();
-  popup.classList.add('show');
-}
-
 function toggleInsight(){
   insightOpen=!insightOpen;
   $('insight-body').style.display=insightOpen?'block':'none';
@@ -829,33 +779,39 @@ function renderSearchResultBar(){
   $('search-result-count').textContent='· '+vis.length+'명';
   const matched=new Map();
   vis.forEach(emp=>{
+    // 태그 카테고리
     [{arr:emp.award,cls:'t-award'},{arr:emp.career,cls:'t-career'},{arr:emp.skills,cls:'t-skills'},{arr:emp.culture,cls:'t-culture'}]
-      .forEach(({arr,cls})=>(arr||[]).forEach(t=>{if(t&&t.toLowerCase().includes(searchQuery.toLowerCase())&&!matched.has(t))matched.set(t,cls);}));
+      .forEach(({arr,cls})=>(arr||[]).forEach(t=>{
+        if(t&&t.toLowerCase().includes(searchQuery.toLowerCase())&&!matched.has(t))matched.set(t,cls);
+      }));
+    // Core Identity도 포함
     if(emp.coreIdentity&&emp.coreIdentity.toLowerCase().includes(searchQuery.toLowerCase())&&!matched.has(emp.coreIdentity))
       matched.set(emp.coreIdentity,'t-skills');
   });
-  $('search-chips').innerHTML=[...matched.entries()].slice(0,8).map(([t,cls])=>'<span class="search-chip '+cls+'">'+esc(t)+'</span>').join('');
+  $('search-chips').innerHTML=[...matched.entries()].slice(0,8)
+    .map(([t,cls])=>'<span class="search-chip '+cls+'">'+esc(t)+'</span>').join('');
 }
 function showToast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 
 window.addEventListener('scroll',()=>{
   const btn=$('back-to-top');
-  if(window.scrollY>300)btn.classList.add('show');else btn.classList.remove('show');
+  if(window.scrollY>300)btn.classList.add('show');
+  else btn.classList.remove('show');
 });
+// ── 상세 모달 ─────────────────────────────────
+let detailList=[];  // 현재 필터된 순서 목록
+let detailIdx=0;
 
-// ── 상세 모달 ──────────────────────────────────────
-let detailList=[],detailIdx=0;
 function openDetail(empId){
-  cancelPreview();
   detailList=filteredEmps();
   detailIdx=detailList.findIndex(e=>e.id===empId);
   if(detailIdx===-1)return;
   renderDetail();
-  $('detail-bg').classList.add('open');
+  document.getElementById('detail-bg').classList.add('open');
   document.body.style.overflow='hidden';
 }
 function closeDetail(){
-  $('detail-bg').classList.remove('open');
+  document.getElementById('detail-bg').classList.remove('open');
   document.body.style.overflow='';
 }
 function navigateDetail(dir){
@@ -863,7 +819,10 @@ function navigateDetail(dir){
   renderDetail();
 }
 function renderDetail(){
-  const emp=detailList[detailIdx];if(!emp)return;
+  const emp=detailList[detailIdx];
+  if(!emp)return;
+
+  // 사진 (좌측 패널)
   const photoEl=$('detail-photo');
   const rClass=emp.role==='AE'?'ae':emp.role==='CD'?'cd':'other';
   const rLabel=emp.role==='CD'?'콘텐츠디자이너':emp.role;
@@ -874,31 +833,34 @@ function renderDetail(){
     :`<div class="detail-photo-placeholder"><span class="detail-photo-initials">${esc(emp.name.charAt(0))}</span></div>`
   )+`<span class="detail-role-badge ${rClass}">${esc(rLabel)} / ${esc(yLabel)}</span>`;
 
+  // 이름 / 소속
   $('detail-name').textContent=emp.name;
   $('detail-project').textContent=emp.project?'· '+emp.project:'';
-  $('detail-meta').textContent=[emp.dept,emp.school].filter(Boolean).join('  ·  ')+(emp.month?' · '+emp.month:'');
+  $('detail-meta').textContent=[emp.dept, emp.school].filter(Boolean).join('  ·  ')+(emp.month?' · '+emp.month:'');
 
-  // PREV 이전 근무지 (모달)
-  const prevWrap=$('detail-prev-wrap');
-  prevWrap.innerHTML=emp.prev
-    ?`<div class="detail-prev-row"><span class="detail-prev-label">PREV</span><span class="detail-prev-value">${esc(emp.prev)}</span></div>`
-    :'';
-
-  // 링크
-  const linksWrap=$('detail-links-wrap');
-  linksWrap.innerHTML='';
-  if(emp.resume||emp.portfolio){
-    const linkWrap=document.createElement('div');
-    linkWrap.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px';
-    if(emp.resume){const a=document.createElement('a');a.href=emp.resume;a.target='_blank';a.rel='noopener';a.className='portfolio-link';a.textContent='📄 이력서';linkWrap.appendChild(a);}
-    if(emp.portfolio){const a=document.createElement('a');a.href=emp.portfolio;a.target='_blank';a.rel='noopener';a.className='portfolio-link';a.textContent='🖼️ 포트폴리오';linkWrap.appendChild(a);}
-    linksWrap.appendChild(linkWrap);
+  // 이력서 / 포트폴리오 링크 (각각)
+  ['detail-resume','detail-portfolio'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.remove();
+  });
+  const linkWrap=document.createElement('div');
+  linkWrap.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px';
+  if(emp.resume){
+    const a=document.createElement('a');a.id='detail-resume';a.href=emp.resume;a.target='_blank';a.rel='noopener';a.className='portfolio-link';a.textContent='📄 이력서';linkWrap.appendChild(a);
   }
+  if(emp.portfolio){
+    const a=document.createElement('a');a.id='detail-portfolio';a.href=emp.portfolio;a.target='_blank';a.rel='noopener';a.className='portfolio-link';a.textContent='🖼️ 포트폴리오';linkWrap.appendChild(a);
+  }
+  if(linkWrap.children.length) $('detail-meta').insertAdjacentElement('afterend',linkWrap);
 
+  // Core Identity
   const coreEl=$('detail-core');
-  if(emp.coreIdentity){coreEl.style.display='inline-flex';$('detail-core-name').textContent=emp.coreIdentity;}
-  else{coreEl.style.display='none';}
+  if(emp.coreIdentity){
+    coreEl.style.display='inline-flex';
+    $('detail-core-name').textContent=emp.coreIdentity;
+  }else{coreEl.style.display='none';}
 
+  // 태그 (비어있거나 - 인 항목은 숨김)
   const cats=[
     {key:'award',label:'수상',cls:'t-award'},
     {key:'career',label:'Career',cls:'t-career'},
@@ -908,18 +870,25 @@ function renderDetail(){
   const tagRows=cats.map(({key,label,cls})=>{
     const tags=(emp[key]||[]).filter(t=>t&&t!=='-'&&t.trim()!=='');
     if(!tags.length)return'';
-    return`<div class="detail-tag-row"><span class="detail-cat-label">${label}</span><div class="detail-tag-list">${tags.map(t=>`<span class="detail-tag ${cls}">${esc(t)}</span>`).join('')}</div></div>`;
+    return`<div class="detail-tag-row">
+      <span class="detail-cat-label">${label}</span>
+      <div class="detail-tag-list">${tags.map(t=>`<span class="detail-tag ${cls}">${esc(t)}</span>`).join('')}</div>
+    </div>`;
   }).filter(Boolean).join('');
   $('detail-tags').innerHTML=tagRows||'<span style="font-size:12px;color:#ccc">태그 정보 없음</span>';
 
+  // 이전/다음 버튼
   $('detail-prev').disabled=detailIdx===0;
   $('detail-next').disabled=detailIdx===detailList.length-1;
   $('detail-nav-info').textContent=`${detailIdx+1} / ${detailList.length}`;
-  $('detail-modal').scrollTop=0;
+
+  // 모달 스크롤 맨 위로
+  document.getElementById('detail-modal').scrollTop=0;
 }
 
+// 키보드 방향키 네비게이션
 document.addEventListener('keydown',e=>{
-  if($('detail-bg').classList.contains('open')){
+  if(document.getElementById('detail-bg').classList.contains('open')){
     if(e.key==='ArrowLeft')navigateDetail(-1);
     if(e.key==='ArrowRight')navigateDetail(1);
     if(e.key==='Escape'){closeDetail();return;}
@@ -927,7 +896,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){clearSearch();activeDepts.clear();activeRoles.clear();activeYears.clear();renderAll();}
   if((e.metaKey||e.ctrlKey)&&e.key==='r'){e.preventDefault();refresh();}
 });
-
+// ── URL 파라미터로 특정 인물 카드 자동 오픈 ──
 function checkUrlParam(){
   const params=new URLSearchParams(window.location.search);
   const pid=params.get('id')||params.get('person');
