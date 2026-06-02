@@ -429,7 +429,8 @@ async function fetchWithProxy(targetUrl){
 
 async function loadData(){
   if(!SHEET_URL){setStatus('waiting');return;}
-  setStatus('loading');$('loading-overlay').classList.remove('hidden');$('error-box').style.display='none';  try{
+  setStatus('loading');$('loading-overlay').classList.remove('hidden');$('error-box').style.display='none';
+  try{
     const text=await fetchWithProxy(SHEET_URL);
     const rows=parseCSV(text);
     if(rows.length<2)throw new Error('데이터 없음');
@@ -450,13 +451,33 @@ async function loadData(){
     })).filter(e=>e.name);
     const seen=new Set(employees.map(e=>e.month));
     months=MONTH_ORDER.filter(m=>seen.has(m));
+    // ✅ 성공 시 localStorage에 캐시 저장
+    try{localStorage.setItem('talent_cache',JSON.stringify({employees,months,ts:Date.now()}));}catch(e){}
     setStatus('live');renderAll();
     const t=new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
     showToast('✓ '+employees.length+'명 불러옴 · '+t);
   }catch(e){
-    console.error(e);setStatus('error');
+    console.error(e);
+    // ❌ 실패 시 캐시된 데이터로 폴백
+    try{
+      const cached=JSON.parse(localStorage.getItem('talent_cache')||'null');
+      if(cached&&cached.employees&&cached.employees.length){
+        employees=cached.employees;months=cached.months||[];
+        const min=Math.round((Date.now()-cached.ts)/60000);
+        setStatus('live');renderAll();
+        showToast('⚡ 캐시 데이터 사용 중 ('+min+'분 전 데이터)');
+        $('status-text').textContent='캐시 연결 · '+min+'분 전 데이터';
+        $('loading-overlay').classList.add('hidden');
+        // 백그라운드에서 재시도
+        setTimeout(()=>loadData(),30000);
+        return;
+      }
+    }catch(e2){}
+    setStatus('error');
     $('error-box').style.display='block';
-    $('error-box').innerHTML='<b>데이터를 불러오지 못했어요</b>아래 체크리스트를 확인해주세요.<ul style="margin-top:8px;padding-left:16px;line-height:2"><li>구글 시트 → <b>파일 → 공유 → 웹에 게시</b> 가 되어있나요?</li><li>형식이 <b>.csv</b> 로 선택되어 있나요?</li><li>URL이 <code style="background:#fef0f0;padding:1px 5px;border-radius:4px">/pub?output=csv</code> 로 끝나나요?</li></ul><div style="margin-top:10px"><button class="btn" style="font-size:11px;padding:4px 10px" onclick="openSetup()">URL 다시 입력</button></div>';
+    $('error-box').innerHTML='<b>데이터를 불러오지 못했어요</b> 30초 후 자동으로 재시도합니다.<ul style="margin-top:8px;padding-left:16px;line-height:2"><li>구글 시트 → <b>파일 → 공유 → 웹에 게시</b> 상태인지 확인</li><li>URL이 <code style="background:#fef0f0;padding:1px 5px;border-radius:4px">/pub?output=csv</code> 로 끝나는지 확인</li></ul><div style="margin-top:10px;display:flex;gap:6px"><button class="btn primary" style="font-size:11px;padding:4px 12px" onclick="loadData()">지금 재시도</button><button class="btn" style="font-size:11px;padding:4px 10px" onclick="openSetup()">URL 설정</button></div>';
+    // 30초 후 자동 재시도
+    setTimeout(()=>{if(employees.length===0)loadData();},30000);
   }
   finally{$('loading-overlay').classList.add('hidden');}
 }
