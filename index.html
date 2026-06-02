@@ -547,6 +547,8 @@ function isNotable(emp){
 
 // 주목 인재 필터 상태
 let notableOnly=false;
+
+function empMatchesSearch(emp,q){
   if(!q)return true;
   const all=[...(emp.award||[]),...(emp.career||[]),...(emp.skills||[]),...(emp.culture||[]),
     emp.name,emp.dept,emp.project,emp.coreIdentity||''];
