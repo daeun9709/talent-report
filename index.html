@@ -61,7 +61,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .stat-mini-l{font-size:10px;color:#aaa;white-space:nowrap;line-height:1.4}
 .stat-mini-wide{min-width:64px}
 .stat-group-row-wide{display:flex;gap:32px;align-items:flex-start}
-.dept-stat{background:#fff;border-radius:12px;padding:16px 18px;border:1px solid #eaeae8;display:flex;flex-direction:column;justify-content:center}
+.dept-stat{background:#fff;border-radius:12px;padding:16px 18px;border:1px solid #eaeae8;display:flex;flex-direction:column;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,'Pretendard','Segoe UI','Noto Sans KR',sans-serif}
 .dept-toggle-btn{font-size:10px;color:#bbb;background:none;border:none;cursor:pointer;padding:2px 4px;transition:color .15s}
 .dept-toggle-btn:hover{color:#888}
 .dept-bars-collapsed .dept-bar-row:nth-child(n+6){display:none}
@@ -305,6 +305,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
       <div class="keyword-chart" id="keyword-chart"></div>
     </div>
   </div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+    <button id="notable-btn" onclick="toggleNotable()"
+      style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:6px 14px;border-radius:20px;border:1px solid #e0e0dd;background:#fff;color:#888;cursor:pointer;transition:all .15s">
+      <span id="notable-dot" style="width:7px;height:7px;border-radius:50%;background:#ddd;flex-shrink:0"></span>
+      주목 인재 보기
+    </button>
+  </div>
   <div class="filter-section" id="filter-bar"></div>
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
@@ -437,6 +444,7 @@ async function loadData(){
       skills:parseTags(r[col('skills')]),culture:parseTags(r[col('culture')]),
       photo:r[col('photo')]||'',
       school:r[col('school')]||'',
+      prevCompany:r[col('prevcompany')]||r[col('prev_company')]||r[col('이전근무지')]||r[col('이전직장')]||'',
       resume:r[col('resume')]||r[col('이력서')]||'',
       portfolio:r[col('portfolio')]||r[col('포트폴리오')]||'',
     })).filter(e=>e.name);
@@ -461,7 +469,34 @@ function setStatus(s){
   if(s==='waiting'){txt.textContent='연결 대기 중';}
 }
 // Core Identity도 검색 대상에 포함
-function empMatchesSearch(emp,q){
+// ── 주목 인재 기준 ───────────────────────────
+// ── 주목 인재 기준 ───────────────────────────
+const TOP4_SCHOOLS=[
+  '서울대','연세대','고려대','성균관대','서강대','한양대','이화여대','중앙대','경희대','한국외국어대',
+  '서울대학교','연세대학교','고려대학교','성균관대학교','서강대학교','이화여자대학교','중앙대학교','경희대학교','한국외국어대학교',
+  'KAIST','카이스트','POSTECH','포스텍'
+];
+const NOTABLE_COMPANIES=[
+  // 광고/마케팅 에이전시
+  '이노션','제일기획','대홍기획','HS애드','오리콤','맥켄','TBWA','DDB','BBDO','퍼블리시스','레오버넷',
+  // 디지털 마케팅
+  '인터브랜드','카페인','엣지랭크','디베이스엔','빅픽처','하이디퍼런스','이너스커뮤니티',
+  // 플랫폼/테크
+  '카카오','네이버','라인','쿠팡','무신사','마켓컬리','배달의민족','토스','당근',
+  // 기타 주요사
+  '삼성전자','LG전자','현대','기아','SK','롯데','CJ','신세계',
+];
+
+function isNotable(emp){
+  const school=(emp.school||'').replace(/\s/g,'');
+  const prev=(emp.prevCompany||'').replace(/\s/g,'');
+  const hasTopSchool=TOP4_SCHOOLS.some(s=>school.includes(s.replace(/\s/g,'')));
+  const hasNotablePrev=NOTABLE_COMPANIES.some(c=>prev.toLowerCase().includes(c.toLowerCase()));
+  return hasTopSchool||hasNotablePrev;
+}
+
+// 주목 인재 필터 상태
+let notableOnly=false;
   if(!q)return true;
   const all=[...(emp.award||[]),...(emp.career||[]),...(emp.skills||[]),...(emp.culture||[]),
     emp.name,emp.dept,emp.project,emp.coreIdentity||''];
@@ -473,6 +508,20 @@ let activeDepts=new Set();   // 비어있으면 전체
 let activeRoles=new Set();
 let activeYears=new Set();
 
+function toggleNotable(){
+  notableOnly=!notableOnly;
+  const btn=document.getElementById('notable-btn');
+  const dot=document.getElementById('notable-dot');
+  if(notableOnly){
+    btn.style.cssText='display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:6px 14px;border-radius:20px;border:1px solid #c8b89a;background:#f0ede6;color:#3a3530;cursor:pointer;transition:all .15s';
+    dot.style.background='#c8b89a';
+  }else{
+    btn.style.cssText='display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:6px 14px;border-radius:20px;border:1px solid #e0e0dd;background:#fff;color:#888;cursor:pointer;transition:all .15s';
+    dot.style.background='#ddd';
+  }
+  renderAll();scrollToCards();
+}
+
 function filteredEmps(){
   return employees.filter(e=>{
     const monthOk=currentMonth==='전체'||e.month===currentMonth;
@@ -480,7 +529,8 @@ function filteredEmps(){
     const roleOk=activeRoles.size===0||activeRoles.has(e.role);
     const isNew=!e.year||e.year==='신입';
     const yearOk=activeYears.size===0||(activeYears.has('신입')&&isNew)||(activeYears.has('경력')&&!isNew);
-    return monthOk&&deptOk&&roleOk&&yearOk&&empMatchesSearch(e,searchQuery);
+    const notableOk=!notableOnly||isNotable(e);
+    return monthOk&&deptOk&&roleOk&&yearOk&&notableOk&&empMatchesSearch(e,searchQuery);
   });
 }
 
@@ -718,12 +768,14 @@ function makeCard(emp){
   ].filter(Boolean);
   const linkHtml=linkArr.length?`<div class="card-link-grid">${linkArr.join('')}</div>`:'';
   const schoolBadge=emp.school?`<span class="school-badge">${esc(emp.school)}</span>`:'';
+  const notableBadge=isNotable(emp)?`<span style="position:absolute;top:9px;left:9px;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(200,184,154,.9);color:#fff;letter-spacing:.03em">⭐ 주목</span>`:'';
   const coreTag=emp.coreIdentity?`<div class="tag-row"><span class="cat-label">Identity</span><div class="tag-list"><span class="tag t-identity">${esc(emp.coreIdentity)}</span></div></div>`:'';
   card.innerHTML=`
     <div class="photo-wrap">
       ${makePhotoEl(emp)}
       <span class="role-badge ${rClass}">${esc(rLabel)} / ${esc(yLabel)}</span>
       ${schoolBadge}
+      ${notableBadge}
     </div>
     <div class="card-body">
       <div>
@@ -732,6 +784,7 @@ function makeCard(emp){
           <span class="card-dept">${esc(emp.dept)}</span>
         </div>
         ${emp.project?`<div class="card-project-inline"><span class="card-project-label">Project</span><span class="card-project-value">${esc(emp.project)}</span></div>`:''}
+        ${emp.prevCompany&&emp.prevCompany!=='-'?`<div class="card-project-inline" style="margin-bottom:4px"><span class="card-project-label">Prev</span><span style="font-size:11px;color:#888;font-weight:500;background:var(--bg-secondary,#f7f6f2);padding:1px 7px;border-radius:5px">${esc(emp.prevCompany)}</span></div>`:''}
         ${linkHtml}
       </div>
       <hr class="divider">
