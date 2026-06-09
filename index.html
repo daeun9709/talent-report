@@ -533,9 +533,9 @@ const NOTABLE_COMPANIES=[
 ];
 
 function isNotable(emp){
-  const school=(emp.school||'').replace(/\s/g,'');
+  const school=(emp.school||'').replace(/\s/g,'').replace(/\(.*?\)/g,'');
   const prev=(emp.prevCompany||'').replace(/\s/g,'');
-  const hasTopSchool=TOP4_SCHOOLS.some(s=>school.includes(s.replace(/\s/g,'')));
+  const hasTopSchool=TOP4_SCHOOLS.some(s=>school===s.replace(/\s/g,''));
   const hasNotablePrev=NOTABLE_COMPANIES.some(c=>prev.toLowerCase().includes(c.toLowerCase()));
   return hasTopSchool||hasNotablePrev;
 }
