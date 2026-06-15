@@ -475,6 +475,8 @@ async function loadData(){
       photo:r[col('photo')]||'',
       school:r[col('school')]||'',
       prevCompany:r[col('prevcompany')]||r[col('prev_company')]||r[col('이전근무지')]||r[col('이전직장')]||'',
+      notableOverride:(r[col('notable')]||'').trim().toUpperCase(),
+      notableReason:r[col('notable_reason')]||r[col('notablereason')]||'',
       resume:r[col('resume')]||r[col('이력서')]||'',
       portfolio:r[col('portfolio')]||r[col('포트폴리오')]||'',
     })).filter(e=>e.name);
@@ -533,6 +535,10 @@ const NOTABLE_COMPANIES=[
 ];
 
 function isNotable(emp){
+  // 수동 강제 설정 우선
+  if(emp.notableOverride==='Y')return true;
+  if(emp.notableOverride==='N')return false;
+  // 자동 판정
   const school=(emp.school||'').replace(/\s/g,'').replace(/\(.*?\)/g,'');
   const prev=(emp.prevCompany||'').replace(/\s/g,'');
   const hasTopSchool=TOP4_SCHOOLS.some(s=>school===s.replace(/\s/g,''));
@@ -960,6 +966,27 @@ function renderDetail(){
     coreEl.style.display='inline-flex';
     $('detail-core-name').textContent=emp.coreIdentity;
   }else{coreEl.style.display='none';}
+
+  // 주목 인재 코멘트 박스 (이전에 쌓인 박스 전부 제거)
+  document.querySelectorAll('.detail-notable-box').forEach(el=>el.remove());
+  if(isNotable(emp)){
+    const notableEl=document.createElement('div');
+    notableEl.className='detail-notable-box';
+    notableEl.style.cssText='background:#fdf6ec;border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;flex-direction:column;gap:4px';
+    const titleEl=document.createElement('div');
+    titleEl.style.cssText='display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#a9762f';
+    titleEl.innerHTML='⭐ 주목 인재';
+    notableEl.appendChild(titleEl);
+    if(emp.notableReason){
+      const reasonEl=document.createElement('p');
+      reasonEl.style.cssText='font-size:12px;color:#888;margin:0;line-height:1.6';
+      reasonEl.textContent=emp.notableReason;
+      notableEl.appendChild(reasonEl);
+    }
+    // detail-meta(및 링크) 다음, Core Identity 박스 앞에 위치
+    const anchor=linkWrap.children.length?linkWrap:$('detail-meta');
+    anchor.insertAdjacentElement('afterend',notableEl);
+  }
 
   // 태그 (비어있거나 - 인 항목은 숨김)
   const cats=[
