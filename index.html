@@ -570,6 +570,12 @@ let activeYears=new Set();
 
 function toggleNotable(){
   notableOnly=!notableOnly;
+  applyNotableUI();
+  updateNotableUrl();
+  renderAll();scrollToCards();
+}
+
+function applyNotableUI(){
   const btn=document.getElementById('notable-btn');
   const dot=document.getElementById('notable-dot');
   if(notableOnly){
@@ -579,7 +585,13 @@ function toggleNotable(){
     btn.style.cssText='display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:6px 14px;border-radius:20px;border:1px solid #e0e0dd;background:#fff;color:#888;cursor:pointer;transition:all .15s';
     dot.style.background='#ddd';
   }
-  renderAll();scrollToCards();
+}
+
+function updateNotableUrl(){
+  const url=new URL(window.location.href);
+  if(notableOnly)url.searchParams.set('notable','1');
+  else url.searchParams.delete('notable');
+  history.replaceState(null,'',url.toString());
 }
 
 function filteredEmps(){
@@ -1047,6 +1059,12 @@ document.addEventListener('keydown',e=>{
 // ── URL 파라미터로 특정 인물 카드 자동 오픈 ──
 function checkUrlParam(){
   const params=new URLSearchParams(window.location.search);
+  // 주목 인재 필터 자동 적용
+  if(params.get('notable')==='1'&&!notableOnly){
+    notableOnly=true;
+    applyNotableUI();
+    renderAll();
+  }
   const pid=params.get('id')||params.get('person');
   if(!pid)return;
   const emp=employees.find(e=>String(e.id)===String(pid)||e.name===decodeURIComponent(pid));
