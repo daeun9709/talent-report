@@ -376,19 +376,26 @@ const MONTH_ORDER=['1월','2월','3월','4월','5월','6월','7월','8월','9월
 
 function parseCSV(text){
   const rows=[];
-  const lines=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
-  for(const line of lines){
-    if(!line.trim())continue;
-    const cols=[];let cur='',inQ=false;
-    for(let i=0;i<line.length;i++){
-      const c=line[i];
-      if(c==='"'){inQ=!inQ;}
-      else if(c===','&&!inQ){cols.push(cur.trim());cur='';}
-      else{cur+=c;}
+  const normalized=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+  let row=[],cur='',inQ=false;
+  for(let i=0;i<normalized.length;i++){
+    const c=normalized[i];
+    if(c==='"'){
+      if(inQ&&normalized[i+1]==='"'){cur+='"';i++;}
+      else inQ=!inQ;
+    }else if(c===','&&!inQ){
+      row.push(cur);cur='';
+    }else if(c==='\n'&&!inQ){
+      row.push(cur);cur='';
+      if(row.some(c=>c.trim()!==''))rows.push(row);
+      row=[];
+    }else{
+      cur+=c;
     }
-    cols.push(cur.trim());rows.push(cols);
   }
-  return rows;
+  if(cur!==''||row.length){row.push(cur);if(row.some(c=>c.trim()!==''))rows.push(row);}
+  // trim each cell (단, 줄바꿈은 보존)
+  return rows.map(r=>r.map(c=>c.replace(/^[ \t]+|[ \t]+$/g,'')));
 }
 function parseTags(s){return(!s||!s.trim())?[]:s.split(';').map(x=>x.trim()).filter(Boolean);}
 function getDeptKey(d){
@@ -978,10 +985,23 @@ function renderDetail(){
     titleEl.innerHTML='⭐ 주목 인재';
     notableEl.appendChild(titleEl);
     if(emp.notableReason){
-      const reasonEl=document.createElement('p');
-      reasonEl.style.cssText='font-size:12px;color:#888;margin:0;line-height:1.6';
-      reasonEl.textContent=emp.notableReason;
-      notableEl.appendChild(reasonEl);
+      const lines=emp.notableReason.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+      if(lines.length>1){
+        const ul=document.createElement('ul');
+        ul.style.cssText='margin:0;padding-left:16px;display:flex;flex-direction:column;gap:2px';
+        lines.forEach(line=>{
+          const li=document.createElement('li');
+          li.style.cssText='font-size:12px;color:#888;line-height:1.6';
+          li.textContent=line;
+          ul.appendChild(li);
+        });
+        notableEl.appendChild(ul);
+      }else{
+        const reasonEl=document.createElement('p');
+        reasonEl.style.cssText='font-size:12px;color:#888;margin:0;line-height:1.6';
+        reasonEl.textContent=emp.notableReason;
+        notableEl.appendChild(reasonEl);
+      }
     }
     // detail-meta(및 링크) 다음, Core Identity 박스 앞에 위치
     const anchor=linkWrap.children.length?linkWrap:$('detail-meta');
