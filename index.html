@@ -4,6 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>신규입사자 인재리포트</title>
+<script src="https://accounts.google.com/gsi/client" async></script>
+<style>
+/* ── 로그인 화면 ── */
+.auth-screen{position:fixed;inset:0;background:#f4f3f0;display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:0}
+.auth-screen.hidden{display:none}
+.auth-card{background:#fff;border-radius:20px;padding:2.5rem 2.5rem 2rem;width:100%;max-width:400px;box-shadow:0 8px 40px rgba(0,0,0,.1);display:flex;flex-direction:column;align-items:center;gap:1.25rem}
+.auth-logo{font-size:13px;font-weight:700;color:#bbb;letter-spacing:.08em;text-transform:uppercase}
+.auth-title{font-size:22px;font-weight:700;color:#1a1a1a;text-align:center}
+.auth-sub{font-size:13px;color:#aaa;text-align:center;line-height:1.7}
+.auth-divider{width:100%;border:none;border-top:1px solid #f0efe9}
+.auth-error{font-size:12px;color:#e05252;background:#fef0f0;padding:10px 14px;border-radius:8px;width:100%;text-align:center;display:none}
+.auth-error.show{display:block}
+.auth-footer{font-size:11px;color:#ccc;text-align:center}
+</style>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;background:#f4f3f0;min-height:100vh;color:#1a1a1a}
@@ -326,7 +340,36 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
   </div>
   <div id="main-content"></div>
 </div>
-<div class="toast" id="toast"></div>
+<!-- 로그인 화면 -->
+<div class="auth-screen" id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">신규입사자 인재리포트</div>
+    <div class="auth-title">피플팀 전용<br>인재리포트</div>
+    <div class="auth-sub">The SMC 그룹 구성원만 열람할 수 있어요.<br>본인 구글 계정으로 로그인해주세요.</div>
+    <hr class="auth-divider">
+    <div id="g_id_onload"
+      data-client_id="218091432452-ge3d11cot4cqq92j94om0fukvumkdqq0.apps.googleusercontent.com"
+      data-callback="handleGoogleLogin"
+      data-auto_prompt="false">
+    </div>
+    <div class="g_id_signin"
+      data-type="standard"
+      data-size="large"
+      data-theme="outline"
+      data-text="signin_with"
+      data-shape="rectangular"
+      data-logo_alignment="left"
+      data-width="320">
+    </div>
+    <div class="auth-error" id="auth-error">
+      접근 권한이 없는 계정이에요.<br>The SMC 그룹 계정(@thesmc.co.kr 등)으로 로그인해주세요.
+    </div>
+    <div class="auth-footer">thesmc · socialmc · dadecomm · team-mint · 3rabbits</div>
+  </div>
+</div>
+
+<!-- 메인 콘텐츠 -->
+<div id="toast" class="toast"></div>
 <button class="back-to-top" id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="맨 위로">↑</button>
 
 <!-- 상세 모달 -->
@@ -373,6 +416,40 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const CAT_COLOR={skills:'#2c6a10',culture:'#962858',career:'#154fa0',award:'#d4820a'};
 const MONTH_ORDER=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+
+// ── Google 로그인 인증 ──────────────────────
+const ALLOWED_DOMAINS=['thesmc.co.kr','socialmc.co.kr','dadecomm.co.kr','team-mint.io','3rabbits.com'];
+
+function handleGoogleLogin(response){
+  try{
+    const payload=JSON.parse(atob(response.credential.split('.')[1]));
+    const email=payload.email||'';
+    const domain=email.split('@')[1]||'';
+    if(ALLOWED_DOMAINS.includes(domain)){
+      sessionStorage.setItem('auth_email',email);
+      sessionStorage.setItem('auth_ts',Date.now());
+      document.getElementById('auth-screen').classList.add('hidden');
+    }else{
+      document.getElementById('auth-error').classList.add('show');
+    }
+  }catch(e){
+    document.getElementById('auth-error').classList.add('show');
+  }
+}
+
+function checkAuth(){
+  const email=sessionStorage.getItem('auth_email');
+  const ts=Number(sessionStorage.getItem('auth_ts')||0);
+  if(email&&(Date.now()-ts)<8*60*60*1000){
+    const domain=email.split('@')[1]||'';
+    if(ALLOWED_DOMAINS.includes(domain)){
+      document.getElementById('auth-screen').classList.add('hidden');
+      return true;
+    }
+  }
+  return false;
+}
+checkAuth();
 
 function parseCSV(text){
   const rows=[];
